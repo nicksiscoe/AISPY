@@ -1,4 +1,4 @@
-export interface Game {
+export interface GameState {
   id: string;
   players: Player[];
   rounds: Round[];

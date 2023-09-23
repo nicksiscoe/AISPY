@@ -1,4 +1,4 @@
-import { Game } from './state';
+import { GameState } from './state';
 
 /**
  * Stuff that gets sent from server to client
@@ -14,7 +14,7 @@ type E<T extends string, D = {}> = {
 };
 
 /** Updated game state */
-export type StateChange = E<'stateChange', Game>;
+export type StateChange = E<'stateChange', GameState>;
 
 /** Waiting on other players to join */
 export type Joining = E<'joining'>;
@@ -22,4 +22,4 @@ export type Joining = E<'joining'>;
 /** All players have joined and the game is beginning */
 export type Begin = E<'begin'>;
 
-export type Events = Joining | Begin | StateChange;
+export type GameEvent = Joining | Begin | StateChange;
