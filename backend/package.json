@@ -3,18 +3,20 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsup --clean --tsconfig tsconfig.json src",
     "dev": "nodemon --ext ts --watch src --exec \"npm run build && npm start\"",
     "format": "prettier -w . --cache",
     "lint": "eslint . --cache",
-    "start": "node dist"
+    "start": "node dist/main"
   },
   "tsup": {
     "entry": [
       "src/index.ts"
     ],
     "clean": true,
+    "dts": true,
     "format": [
       "cjs"
     ]
