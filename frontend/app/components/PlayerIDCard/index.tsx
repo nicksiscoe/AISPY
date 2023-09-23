@@ -7,6 +7,8 @@ interface Props {
   player: Player;
 }
 
+
+// not used atm
 function PlayerIDCard({ player }: Props) {
   const color = stringToColor(player.alias);
 
