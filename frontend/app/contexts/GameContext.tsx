@@ -34,7 +34,7 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
   const [state, setState] = useState<GameState | undefined>(TEST.state);
 
   const socketInitializer = async () => {
-    const url = process.env.NEXT_PUBLIC_SOCKET_URL;
+    const url = process.env.NEXT_PUBLIC_SOCKET_URL ?? 'http://localhost:3001';
     if (!url) {
       console.error("No socket URL provided.");
       return;
