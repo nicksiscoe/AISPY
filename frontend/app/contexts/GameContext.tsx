@@ -96,7 +96,7 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
 
   const setPlayerReady = (ready: boolean) => {
     if (ready) {
-      socket?.emit("join");
+      socket.emit("message", { type: "join" });
     }
   };
   // TODO: REMOVE (ALEX WANTED DIS)

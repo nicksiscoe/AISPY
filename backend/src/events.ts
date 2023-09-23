@@ -33,8 +33,7 @@ export type Begin = E<'begin', GameState>;
 /** A question or answer is submitted */
 export type NewMessage = E<'message', Message>;
 
-type E<T extends string, D = {}> = {
-  data: D;
+type E<T extends string, D = void> = (D extends object ? { data: D } : {}) & {
   /**
    * When this current step ends (as a date string)
    * i.e., when the next event/step will be sent by the server
