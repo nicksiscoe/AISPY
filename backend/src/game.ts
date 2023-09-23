@@ -3,8 +3,18 @@ export interface Game {
   players: Player[];
 }
 
-export interface Player {
-  connectionId: string;
+export interface Player extends Persona {
   id: string;
+  name: string;
+  socketId: string;
   status: 'active' | 'eliminated';
 }
+
+export interface Persona {
+  age: number;
+  bio: string;
+  location: string;
+  name: string;
+}
+
+export interface Round {}
