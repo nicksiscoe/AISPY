@@ -1,11 +1,9 @@
 "use client";
 
 import React, { useState, createContext, useContext, useEffect } from "react";
-import { io } from "socket.io-client";
 import { Begin, GameState, Joining, StateChange } from "../types";
 import DUMMY_STATE from "./__test__/DUMMY_STATE";
-
-let socket;
+import { socket } from "../lib/socket";
 
 export type GameContextType = {
   connected?: boolean; // undefined = loading...
@@ -34,41 +32,48 @@ const { Provider } = GameContext;
 
 export const GameProvider = (props: { children: React.ReactNode }) => {
   const [connected, setConnected] = useState<boolean>();
-  const [playerReady, _setPlayerReady] = useState(false);
   const setPlayerReady = (ready: boolean) => {
-    _setPlayerReady(ready);
+    if (ready) {
+      socket?.emit("join");
+    }
   };
   const [state, setState] = useState<GameState | undefined>(TEST.state);
 
-  const socketInitializer = async () => {
-    const url = process.env.NEXT_PUBLIC_SOCKET_URL ?? 'http://localhost:3001';
-    if (!url) {
-      console.error("No socket URL provided.");
-      return;
-    }
+  useEffect(() => {
+    if (!socket) return;
 
-    socket = io(url);
-
-    socket.on("connect", () => {
+    const onConnect = () => {
       setConnected(true);
-    });
-    socket.on("disconnect", () => {
+    };
+    const onDisconnect = () => {
       setConnected(false);
-    });
-
-    socket.on("joining", (event: Joining) => {
+    };
+    const onJoining = (event: Joining) => {
       console.log(event);
-    });
-
-    socket.on("begin", (event: Begin) => {
+    };
+    const onBegin = (event: Begin) => {
       console.log(event);
-    });
-
-    socket.on("stateChange", (event: StateChange) => {
+    };
+    const onStateChange = (event: StateChange) => {
       console.log(event);
-    });
-  };
-  useEffect(() => void socketInitializer(), []);
+    };
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    socket.on("joining", onJoining);
+    socket.on("begin", onBegin);
+    socket.on("stateChange", onStateChange);
+
+    return () => {
+      if (!socket) return;
+
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+      socket.off("joining", onJoining);
+      socket.off("begin", onBegin);
+      socket.off("stateChange", onStateChange);
+    };
+  }, []);
 
   const live = !!state;
 
