@@ -1,8 +1,11 @@
 "use client";
 
-import React, { useState, createContext, useContext } from "react";
+import React, { useState, createContext, useContext, useEffect } from "react";
+import { io } from "socket.io-client";
 import { GameState } from "../types";
 import DUMMY_STATE from "./__test__/DUMMY_STATE";
+
+let socket;
 
 export type GameContextType = {
   setPlayerReady: (ready: boolean) => void;
@@ -29,6 +32,25 @@ const { Provider } = GameContext;
 export const GameProvider = (props: { children: React.ReactNode }) => {
   const [playerReady, setPlayerReady] = useState(false);
   const [state, setState] = useState<GameState | undefined>(TEST.state);
+
+  const socketInitializer = async () => {
+    const url = process.env.NEXT_PUBLIC_SOCKET_URL;
+    if (!url) {
+      console.error("No socket URL provided.");
+      return;
+    }
+
+    socket = io(url);
+
+    socket.on("connect", () => {
+      console.log("connected");
+    });
+
+    socket.on("update-input", (msg) => {
+      console.log(msg);
+    });
+  };
+  useEffect(() => void socketInitializer(), []);
 
   const live = !!state;
 
