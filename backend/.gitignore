@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# testing
+.nyc_output
+coverage/
+
+# cache
+.next/
+.turbo/
+.eslintcache
+
+# misc
+.DS_Store
+*.pem
+temp
+
+# output
+out/
+build/
+dist/
+
+# secrets
+.env
+.env.local
