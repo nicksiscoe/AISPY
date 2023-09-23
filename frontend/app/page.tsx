@@ -7,10 +7,12 @@ import ChatFeed from "./components/ChatFeed";
 import styles from "./page.module.scss";
 import { GameState } from "./types";
 import PlayerTray from "./components/PlayerTray";
+import Title from "./components/Title";
 
 function Game({ state }: { state: GameState }) {
   return (
     <div className={styles.game}>
+      <Title />
       <PlayerTray />
       <ChatFeed />
     </div>
