@@ -1,24 +1,64 @@
 import { useEffect, useRef, useState } from "react";
-import { AnnouncementDetails, FeedItem, MessageDetails } from "@/app/types";
+import { RoundPhase, UserActionType } from "@/app/types";
 import styles from "./index.module.scss";
 import { useGameContext } from "@/app/contexts/GameContext";
+import PlayerTray from "../PlayerTray";
 
-function FeedItem({ item }: { item: FeedItem }) {
-  switch (item.type) {
-    case "announcement": {
-      const details: AnnouncementDetails = item.details;
+function RoundPhase({ phase }: { phase: RoundPhase }) {
+  switch (phase.type) {
+    case "chat": {
+      return (
+        <>
+          {phase.messages.map((message) => {
+            return (
+              <div key={`${phase.type}-m-${message.id}`}>
+                <p>{message.from}</p>
+                <p>{message.contents}</p>
+              </div>
+            );
+          })}
+        </>
+      );
+    }
+    case "vote": {
+      return <p>voting...</p>;
+    }
+  }
+}
+
+function UserAction({ type }: { type: UserActionType }) {
+  const [text, setText] = useState("");
+
+  switch (type) {
+    case UserActionType.ASK: {
       return (
         <div>
-          <p>{details.text}</p>
+          <p>Select a player to interrogate...</p>
+          <PlayerTray />
+          <input
+            placeholder="Ask a question..."
+            onChange={(e) => setText(e.target.value)}
+            value={text}
+          />
         </div>
       );
     }
-    case "message": {
-      const details: MessageDetails = item.details;
+    case UserActionType.ANSWER: {
       return (
         <div>
-          <p>{details.playerId}</p>
-          <p>{details.text}</p>
+          <input
+            placeholder="Answer..."
+            onChange={(e) => setText(e.target.value)}
+            value={text}
+          />
+        </div>
+      );
+    }
+    case UserActionType.VOTE: {
+      return (
+        <div>
+          <p>Vote for a player to eliminate...</p>
+          <PlayerTray />
         </div>
       );
     }
@@ -28,51 +68,80 @@ function FeedItem({ item }: { item: FeedItem }) {
 interface Props {}
 
 function ChatFeed(props: Props) {
-  const { state } = useGameContext();
+  const { playerId, state } = useGameContext();
 
   const scrollAnchorRef = useRef<HTMLDivElement>(null);
 
-  const [feed, setFeed] = useState<FeedItem[]>([]);
-  const pushFeedItem = (item: FeedItem) => {
-    setFeed((prevFeed) => [...prevFeed, item]);
-  };
-  useEffect(() => {
-    if (!state) return;
-
-    if (!feed.length) {
-      const timeout = setTimeout(() => {
-        pushFeedItem({
-          id: "welcome",
-          type: "announcement",
-          details: {
-            text: "Welcome to the game.",
-          },
-        });
-      }, 1000);
-      return () => clearTimeout(timeout);
-    }
-    // switch (state.lastEvent) {
-    //   case "..."
-    //    pushFeedItem(...)
-    // }
-  }, [state]);
-
+  const [userActionType, setUserActionType] = useState<UserActionType>();
   useEffect(() => {
     scrollAnchorRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "end",
     });
-  }, [feed]);
+
+    if (!state?.rounds.length) return;
+    const ongoingRound = state.rounds.find((r) => r.status === "ongoing");
+    switch (ongoingRound?.currentPhase.type) {
+      case undefined: {
+        console.error("No ongoing round. Unsure what to ask the user to do");
+        break;
+      }
+      case "chat": {
+        // If I was just asked a question...
+        if (
+          ongoingRound.currentPhase.messages[
+            ongoingRound.currentPhase.messages.length - 1
+          ].to === playerId
+        ) {
+          setUserActionType(UserActionType.ANSWER);
+        }
+        // If I need to ask someone a question...
+        // ???
+      }
+      case "vote": {
+        setUserActionType(UserActionType.VOTE);
+      }
+    }
+  }, [state]);
+
+  console.log(state);
 
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.feed}>
-        <div id="feed-anchor" ref={scrollAnchorRef} />
-        {feed.map((feedItem) => {
-          return <FeedItem key={`fi-${feedItem.id}`} item={feedItem} />;
-        })}
+    <>
+      <div className={styles.feedWrapper}>
+        <div className={styles.feed}>
+          <div id="feed-anchor" ref={scrollAnchorRef} />
+          {state?.rounds.map((round) => {
+            return (
+              <>
+                <RoundPhase phase={round.currentPhase} />
+                {round.previousPhases.map((previousPhase) => {
+                  return (
+                    <RoundPhase
+                      key={`${round.id}-phase-${previousPhase.type}`}
+                      phase={previousPhase}
+                    />
+                  );
+                })}
+                <div>
+                  <p>Round {round.id + 1}</p>
+                </div>
+              </>
+            );
+          })}
+          <div>
+            <p>Welcome to the game.</p>
+          </div>
+        </div>
       </div>
-    </div>
+      <div className={styles.actionWrapper}>
+        {!userActionType ? (
+          <p>Nothing to do</p>
+        ) : (
+          <UserAction type={userActionType} />
+        )}
+      </div>
+    </>
   );
 }
 
