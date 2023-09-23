@@ -38,6 +38,7 @@ export interface Message {
   contents: string;
   /** player ID */
   from: string;
+  id: string;
   /** Date string */
   sentAt: number;
   /** player ID */

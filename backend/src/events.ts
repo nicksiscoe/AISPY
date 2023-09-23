@@ -1,17 +1,9 @@
 import { GameState } from './state';
 
 /**
- * Stuff that gets sent from server to client
+ * The singular game event type; encompasses all events
  */
-type E<T extends string, D = {}> = {
-  data: D;
-  /**
-   * When this current step ends (as a date string)
-   * i.e., when the next event/step will be sent by the server
-   */
-  ends: string;
-  type: T;
-};
+export type GameEvent = Joining | Begin | StateChange;
 
 /** Updated game state */
 export type StateChange = E<'stateChange', GameState>;
@@ -22,4 +14,12 @@ export type Joining = E<'joining'>;
 /** All players have joined and the game is beginning */
 export type Begin = E<'begin'>;
 
-export type GameEvent = Joining | Begin | StateChange;
+type E<T extends string, D = {}> = {
+  data: D;
+  /**
+   * When this current step ends (as a date string)
+   * i.e., when the next event/step will be sent by the server
+   */
+  ends: string;
+  type: T;
+};
