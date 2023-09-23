@@ -7,6 +7,7 @@ import ChatFeed from "./components/ChatFeed";
 import PlayerIDCard from "./components/PlayerIDCard";
 import styles from "./page.module.scss";
 import { GameState } from "./types";
+import PlayerTray from "./components/PlayerTray";
 
 function Game({ state }: { state: GameState }) {
   return (
@@ -16,6 +17,7 @@ function Game({ state }: { state: GameState }) {
           return <PlayerIDCard key={`pidc-${player.id}`} player={player} />;
         })}
       </div>
+      <PlayerTray />
       <ChatFeed />
     </div>
   );

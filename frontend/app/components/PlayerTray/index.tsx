@@ -3,6 +3,7 @@ import { styled } from '@mui/material/styles';
 import Badge from '@mui/material/Badge';
 import Avatar from '@mui/material/Avatar';
 import Stack from '@mui/material/Stack';
+import PlayerModal from '../PlayerModal';
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
@@ -52,26 +53,41 @@ const modalStyle = {
 };
 
 export default function PlayerTray() {
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+  const openModal = () => {
+    setIsModalOpen(true); 
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <div>
-      <Stack direction="row" spacing={1}>
+      <Stack direction="row" spacing={2}>
         <StyledBadge
-            overlap="circular"
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            variant="dot"
-            onClick={() => console.log('miller')}
-          >
-            <Avatar alt="Remy Sharp">MB</Avatar>
-          </StyledBadge>
+          overlap="circular"
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          variant="dot"
+          onClick={openModal} // Open the modal when clicked
+        >
+          <Avatar alt="Remy Sharp">MB</Avatar>
+        </StyledBadge>
         <StyledBadge
-            overlap="circular"
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            variant="dot"
-            onClick={() => console.log('royce')}
-          >
-            <Avatar alt="Remy Sharp">RR</Avatar>
-          </StyledBadge>
+          overlap="circular"
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          variant="dot"
+          onClick={openModal} // Open the modal when clicked
+        >
+          <Avatar alt="Remy Sharp">RR</Avatar>
+        </StyledBadge>
       </Stack>
+
+      {/* Conditionally render the PlayerModal component */}
+      {isModalOpen && (
+        <PlayerModal isOpen={isModalOpen} onClose={closeModal} />
+      )}
     </div>
   );
 }
