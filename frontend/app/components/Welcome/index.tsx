@@ -15,8 +15,9 @@ function Welcome(props: Props) {
       <button
         className={`${styles.readyButton} ${playerReady && styles.ready}`}
         onClick={() => {
-          setPlayerReady(!playerReady);
-          gameContext.setPlayerReady(!playerReady);
+          const newReady = !playerReady;
+          setPlayerReady(newReady);
+          gameContext.setPlayerReady(newReady);
         }}
       >
         <div className={styles.radio} />
