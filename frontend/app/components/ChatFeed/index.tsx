@@ -3,6 +3,7 @@ import { RoundPhase, UserActionType } from "@/app/types";
 import styles from "./index.module.scss";
 import { useGameContext } from "@/app/contexts/GameContext";
 import PlayerTray from "../PlayerTray";
+import CountdownTimer from "../CountdownTimer";
 
 function RoundPhase({ phase }: { phase: RoundPhase }) {
   switch (phase.type) {
@@ -68,11 +69,12 @@ function UserAction({ type }: { type: UserActionType }) {
 interface Props {}
 
 function ChatFeed(props: Props) {
-  const { playerId, state } = useGameContext();
+  const { playerId, state, prevChange, nextChange } = useGameContext();
 
   const scrollAnchorRef = useRef<HTMLDivElement>(null);
 
   const [userActionType, setUserActionType] = useState<UserActionType>();
+
   useEffect(() => {
     scrollAnchorRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -87,12 +89,13 @@ function ChatFeed(props: Props) {
         break;
       }
       case "chat": {
-        // If I was just asked a question...
-        if (
+        const latestMessage =
           ongoingRound.currentPhase.messages[
             ongoingRound.currentPhase.messages.length - 1
-          ].to === playerId
-        ) {
+          ];
+
+        // If I was just asked a question...
+        if (latestMessage.to === playerId) {
           setUserActionType(UserActionType.ANSWER);
         }
         // If I need to ask someone a question...
@@ -134,6 +137,9 @@ function ChatFeed(props: Props) {
           </div>
         </div>
       </div>
+      {!!prevChange && !!nextChange && (
+        <CountdownTimer start={prevChange} end={nextChange} />
+      )}
       <div className={styles.actionWrapper}>
         {!userActionType ? (
           <p>Nothing to do</p>

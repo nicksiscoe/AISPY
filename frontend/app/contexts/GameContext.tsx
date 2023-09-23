@@ -11,6 +11,8 @@ export type GameContextType = {
   live: boolean;
   playerId?: string;
   state?: GameState;
+  prevChange?: Date;
+  nextChange?: Date;
 };
 
 const TEST: GameContextType = {
@@ -19,23 +21,34 @@ const TEST: GameContextType = {
   live: true,
   playerId: "test2",
   state: DUMMY_STATE,
+  prevChange: new Date(),
+  nextChange: new Date(new Date().setMinutes(new Date().getMinutes() + 1)),
 };
-
-// TODO: Use `DEFAULT` game state
 const DEFAULT: GameContextType = {
   connected: undefined,
   setPlayerReady: () => {},
   live: false,
 };
 
-export const GameContext = createContext<GameContextType>(TEST);
+// TODO: Use `DEFAULT` game state
+const INITIAL = DEFAULT;
+
+export const GameContext = createContext<GameContextType>(INITIAL);
 
 const { Provider } = GameContext;
 
 export const GameProvider = (props: { children: React.ReactNode }) => {
   const [connected, setConnected] = useState<boolean>();
-  const [playerId, setPlayerId] = useState<string>();
-  const [state, setState] = useState<GameState | undefined>(TEST.state);
+  const [playerId, setPlayerId] = useState<string | undefined>(
+    INITIAL.playerId
+  );
+  const [prevChange, setPrevChance] = useState<Date | undefined>(
+    INITIAL.prevChange
+  );
+  const [nextChange, setNextChange] = useState<Date | undefined>(
+    INITIAL.nextChange
+  );
+  const [state, setState] = useState<GameState | undefined>(INITIAL.state);
 
   useEffect(() => {
     if (!socket) return;
@@ -50,10 +63,18 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
       setPlayerId(event.data.playerId);
     };
     const onBegin = (event: Begin) => {
-      console.log(event);
+      setState({
+        id: event.data.gameId,
+        players: event.data.players,
+        rounds: [],
+      });
+      setPrevChance(new Date());
+      setNextChange(new Date(event.ends));
     };
     const onStateChange = (event: StateChange) => {
-      console.log(event);
+      setState(event.data);
+      setPrevChance(nextChange);
+      setNextChange(new Date(event.ends));
     };
 
     socket.on("connect", onConnect);
@@ -78,6 +99,10 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
       socket?.emit("join");
     }
   };
+  // TODO: REMOVE (ALEX WANTED DIS)
+  useEffect(() => {
+    if (connected) setPlayerReady(true);
+  }, [connected]);
 
   const live = !!state;
 
@@ -87,7 +112,10 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
         connected,
         setPlayerReady,
         live,
+        playerId,
         state,
+        prevChange,
+        nextChange,
       }}
     >
       {props.children}
