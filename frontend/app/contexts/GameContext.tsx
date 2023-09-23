@@ -40,8 +40,7 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
       return;
     }
 
-    await fetch(url);
-    socket = io();
+    socket = io(url);
 
     socket.on("connect", () => {
       console.log("connected");
