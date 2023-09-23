@@ -9,6 +9,7 @@ export type GameContextType = {
   connected?: boolean; // undefined = loading...
   setPlayerReady: (ready: boolean) => void;
   live: boolean;
+  playerId?: string;
   state?: GameState;
 };
 
@@ -16,6 +17,7 @@ const TEST: GameContextType = {
   connected: true,
   setPlayerReady: () => {},
   live: true,
+  playerId: "test2",
   state: DUMMY_STATE,
 };
 
@@ -32,11 +34,7 @@ const { Provider } = GameContext;
 
 export const GameProvider = (props: { children: React.ReactNode }) => {
   const [connected, setConnected] = useState<boolean>();
-  const setPlayerReady = (ready: boolean) => {
-    if (ready) {
-      socket?.emit("join");
-    }
-  };
+  const [playerId, setPlayerId] = useState<string>();
   const [state, setState] = useState<GameState | undefined>(TEST.state);
 
   useEffect(() => {
@@ -49,7 +47,7 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
       setConnected(false);
     };
     const onJoining = (event: Joining) => {
-      console.log(event);
+      setPlayerId(event.data.playerId);
     };
     const onBegin = (event: Begin) => {
       console.log(event);
@@ -74,6 +72,12 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
       socket.off("stateChange", onStateChange);
     };
   }, []);
+
+  const setPlayerReady = (ready: boolean) => {
+    if (ready) {
+      socket?.emit("join");
+    }
+  };
 
   const live = !!state;
 
