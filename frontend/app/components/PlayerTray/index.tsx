@@ -43,40 +43,57 @@ const SmallAvatar = styled(Avatar)(({ theme }) => ({
   border: `px solid ${theme.palette.background.paper}`,
 }));
 
-export default function PlayerTray() {
+interface Props {
+  onSelect?: (player: Player) => void;
+}
+
+export default function PlayerTray(props: Props) {
   const { state } = useGameContext();
 
+  const [selectedPlayer, setSelectedPlayer] = React.useState<Player>();
   const [openPlayer, setOpenPlayer] = React.useState<Player>();
-  const closePlayerModal = () => {
-    setOpenPlayer(undefined);
-  };
 
   return (
     <div className={styles.wrapper}>
       <Stack direction="row" spacing={2}>
         {state?.players.map((player) => {
-          const splitName = player.name.split(' ');
-          const initials = splitName.map(part => part.charAt(0).toUpperCase()).join('');
+          const splitName = player.name.split(" ");
+          const initials = splitName
+            .map((part) => part.charAt(0).toUpperCase())
+            .join("");
+          const isSelected = selectedPlayer?.id === player.id;
           return (
-            <StyledBadge
+            <div
               key={`pt-${player.id}`}
-              overlap="circular"
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              variant="dot"
-              onClick={() => setOpenPlayer(player)} // Open the modal when clicked
+              className={isSelected ? styles.selected : ""}
             >
-              <Avatar alt={player.name}>{initials}</Avatar>
-            </StyledBadge>
+              {isSelected && <div className={styles.kill}>❌</div>}
+              <StyledBadge
+                overlap="circular"
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                variant="dot"
+                onClick={() => {
+                  if (props.onSelect) {
+                    props.onSelect(player);
+                    setSelectedPlayer(player);
+                  } else {
+                    setOpenPlayer(player);
+                  }
+                }}
+              >
+                <Avatar alt={player.name}>{initials}</Avatar>
+              </StyledBadge>
+            </div>
           );
         })}
       </Stack>
 
       {/* Conditionally render the PlayerModal component */}
-      {!!openPlayer && (
+      {!props.onSelect && !!openPlayer && (
         <PlayerModal
           player={openPlayer}
           isOpen={!!openPlayer}
-          onClose={closePlayerModal}
+          onClose={() => setOpenPlayer(undefined)}
         />
       )}
     </div>
