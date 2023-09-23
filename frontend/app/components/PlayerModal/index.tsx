@@ -1,7 +1,8 @@
 import React from "react";
 import Modal from "@mui/material/Modal";
 import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 import { Player } from "@/app/types";
 
 interface PlayerModalProps {
@@ -29,20 +30,36 @@ const PlayerModal: React.FC<PlayerModalProps> = ({
           left: "50%",
           transform: "translate(-50%, -50%)",
           width: "50%",
-          backgroundColor: "black",
+          backgroundColor: "white",
           boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-          padding: 16,
+          padding: 12,
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        <Typography variant="h6" id="modal-title">
-          {player.name}
+        <div style={{ display: "flex", justifyContent: "space-between"}}>
+          <Typography variant="h6" id="modal-title">
+            {player.name}
+          </Typography>
+          <IconButton
+            edge="end"
+            color="inherit"
+            onClick={onClose}
+            aria-label="close"
+            style={{marginTop: "-0.17em"}}
+          >
+            <CloseIcon />
+          </IconButton>
+        </div>
+        <Typography variant="body2" id="modal-description">
+        <b>Age:</b> {player.age}
         </Typography>
         <Typography variant="body2" id="modal-description">
-          {player.bio}
+        <b>Location:</b> {player.location}
         </Typography>
-        <Button variant="contained" color="primary" onClick={onClose}>
-          Close
-        </Button>
+        <Typography variant="body2" id="modal-description">
+          <b>Bio:</b> {player.bio}
+        </Typography>
       </div>
     </Modal>
   );

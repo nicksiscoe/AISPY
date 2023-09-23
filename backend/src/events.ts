@@ -42,8 +42,10 @@ type E<T extends string, D = {}> = {
   /**
    * When this current step ends (as a date string)
    * i.e., when the next event/step will be sent by the server
+   * If `null`, that means the event has no end time (like a state update),
+   * or the end time is unknown (like a join event)
    */
-  ends: string;
+  ends: string | null;
   /** Unique event ID */
   id: string;
   type: T;

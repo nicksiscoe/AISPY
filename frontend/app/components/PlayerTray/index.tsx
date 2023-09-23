@@ -12,7 +12,7 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
     backgroundColor: "#44b700",
     color: "#44b700",
-    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+    boxShadow: `0 0 0 2px ${theme.palette.background.default}`,
     "&::after": {
       position: "absolute",
       top: -1.15,
@@ -40,20 +40,8 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
 const SmallAvatar = styled(Avatar)(({ theme }) => ({
   width: 22,
   height: 22,
-  border: `2px solid ${theme.palette.background.paper}`,
+  border: `px solid ${theme.palette.background.paper}`,
 }));
-
-const modalStyle = {
-  position: "absolute" as "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
 
 export default function PlayerTray() {
   const { state } = useGameContext();
@@ -67,6 +55,8 @@ export default function PlayerTray() {
     <div className={styles.wrapper}>
       <Stack direction="row" spacing={2}>
         {state?.players.map((player) => {
+          const splitName = player.name.split(' ');
+          const initials = splitName.map(part => part.charAt(0).toUpperCase()).join('');
           return (
             <StyledBadge
               key={`pt-${player.id}`}
@@ -75,7 +65,7 @@ export default function PlayerTray() {
               variant="dot"
               onClick={() => setOpenPlayer(player)} // Open the modal when clicked
             >
-              <Avatar alt={player.name}>{player.name}</Avatar>
+              <Avatar alt={player.name}>{initials}</Avatar>
             </StyledBadge>
           );
         })}
