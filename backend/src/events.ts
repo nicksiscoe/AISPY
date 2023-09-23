@@ -20,19 +20,15 @@ export type StateChange = E<'stateChange', GameState>;
 export type Joining = E<
   'joining',
   {
+    /** The ID of the game that will eventually be joined */
+    gameId: string;
     /** The ID assigned to the player */
     playerId: string;
   }
 >;
 
 /** All players have joined and the game is beginning */
-export type Begin = E<
-  'begin',
-  {
-    gameId: string;
-    players: Player[];
-  }
->;
+export type Begin = E<'begin', GameState>;
 
 /** A question or answer is submitted */
 export type NewMessage = E<'message', Message>;
