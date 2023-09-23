@@ -10,6 +10,6 @@ io.on('connection', sock => {
   console.log('connection event', sock.id);
 });
 
-httpServer.listen(3000, () => {
-  console.log('Server started on port 3000');
+httpServer.listen(3001, () => {
+  console.log('Server started on port 3001');
 });
