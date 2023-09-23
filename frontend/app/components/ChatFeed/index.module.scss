@@ -1,0 +1,40 @@
+.wrapper {
+  flex: 1;
+  z-index: 1;
+  overflow: hidden;
+  width: inherit;
+  height: 100%;
+  position: relative;
+  display: flex;
+  transition: transform 0.2s cubic-bezier(0, 0, 0.31, 1);
+  -webkit-overflow-scrolling: touch;
+  overflow: visible;
+  overflow-y: scroll;
+  overscroll-behavior-y: none;
+  overflow-x: hidden;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  & ::-webkit-scrollbar {
+    width: 0 !important;
+  }
+  overflow-anchor: none !important;
+  transition: box;
+
+  .feed {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: stretch;
+    margin-top: auto;
+    margin-bottom: 0;
+    z-index: 0;
+    padding-top: 1em;
+    overflow: hidden;
+
+    & > #feed-anchor {
+      overflow-anchor: auto;
+      height: 0.5px;
+    }
+  }
+}

@@ -1,0 +1,36 @@
+.center {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 4rem 0;
+}
+
+.readyButton {
+  padding: 0.5rem 1rem;
+  border-radius: 100px;
+  color: white;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  outline: none;
+
+  &.ready {
+    color: green;
+    .radio {
+      background-color: green;
+    }
+  }
+
+  .radio {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 100px;
+    background-color: white;
+  }
+}
