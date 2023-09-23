@@ -1,4 +1,4 @@
-import { GameState, Message } from './state';
+import { GameState, Message, Player } from './state';
 
 /**
  * The singular game event type; encompasses all events
@@ -21,7 +21,12 @@ export type Joining = E<
 >;
 
 /** All players have joined and the game is beginning */
-export type Begin = E<'begin'>;
+export type Begin = E<
+  'begin',
+  {
+    players: Player[];
+  }
+>;
 
 /** A question or answer is submitted */
 export type NewMessage = E<'message', Message>;
