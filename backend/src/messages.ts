@@ -8,6 +8,9 @@ export type Answer = M<
   }
 >;
 
+/** A player wants to join a game  */
+export type Join = M<'join'>;
+
 export type Question = M<
   'question',
   {
@@ -24,7 +27,7 @@ export type Vote = M<
   }
 >;
 
-export type GameMessage = Answer | Question;
+export type GameMessage = Answer | Join | Question | Vote;
 
 type M<T extends string, D = {}> = {
   data: D;
