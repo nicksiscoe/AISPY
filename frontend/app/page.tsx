@@ -10,10 +10,12 @@ import { GameState } from "./types";
 
 function Game({ state }: { state: GameState }) {
   return (
-    <div>
-      {state.players.map((player) => {
-        return <PlayerIDCard key={`pidc-${player.id}`} player={player} />;
-      })}
+    <div className={styles.game}>
+      <div style={{ flex: 0 }}>
+        {state.players.map((player) => {
+          return <PlayerIDCard key={`pidc-${player.id}`} player={player} />;
+        })}
+      </div>
       <ChatFeed />
     </div>
   );
