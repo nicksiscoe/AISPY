@@ -5,9 +5,9 @@ export interface GameState {
 }
 
 export interface Player extends Persona {
+  /** The socket/connection ID of the player */
   id: string;
   name: string;
-  socketId: string;
   status: 'active' | 'eliminated';
 }
 
@@ -38,6 +38,7 @@ export interface Message {
   contents: string;
   /** player ID */
   from: string;
+  id: string;
   /** Date string */
   sentAt: number;
   /** player ID */
