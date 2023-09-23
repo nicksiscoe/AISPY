@@ -7,7 +7,6 @@ export interface GameState {
 export interface Player extends Persona {
   /** The socket/connection ID of the player */
   id: string;
-  name: string;
   status: 'active' | 'eliminated';
 }
 
