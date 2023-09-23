@@ -3,7 +3,12 @@ import { GameState, Message, Player } from './state';
 /**
  * The singular game event type; encompasses all events
  */
-export type GameEvent = Begin | Joining | NewMessage | StateChange;
+export type GameEvent = Begin | Crash | Joining | NewMessage | StateChange;
+
+/**
+ * Something has gone horribly wrong and the game is over
+ */
+export type Crash = E<'crash'>;
 
 /**
  * Updated game state
@@ -24,6 +29,7 @@ export type Joining = E<
 export type Begin = E<
   'begin',
   {
+    gameId: string;
     players: Player[];
   }
 >;
