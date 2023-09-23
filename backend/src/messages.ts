@@ -29,7 +29,6 @@ export type Vote = M<
 
 export type GameMessage = Answer | Join | Question | Vote;
 
-type M<T extends string, D = {}> = {
-  data: D;
+type M<T extends string, D = void> = (D extends object ? { data: D } : {}) & {
   type: T;
 };
