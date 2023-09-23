@@ -1,6 +1,7 @@
 export interface Game {
   id: string;
   players: Player[];
+  rounds: Round[];
 }
 
 export interface Player extends Persona {
@@ -17,4 +18,29 @@ export interface Persona {
   name: string;
 }
 
-export interface Round {}
+export type Round = {
+  id: 0 | 1 | 2 | 3;
+  currentPhase: RoundPhase;
+  previousPhases: RoundPhase[];
+  status: 'ended' | 'ongoing';
+};
+
+export type RoundPhase =
+  | {
+      type: 'chat';
+      messages: Message[];
+    }
+  | {
+      type: 'vote';
+    };
+
+export interface Message {
+  contents: string;
+  /** player ID */
+  from: string;
+  /** Date string */
+  sentAt: number;
+  /** player ID */
+  to: string;
+  type: 'answer' | 'question';
+}
