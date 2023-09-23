@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "strictPropertyInitialization": true,
+    "lib": [
+      "esnext"
+    ],
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true
+  },
+  "exclude": [
+    "**/dist",
+    "**/build",
+    "**/node_modules"
+  ]
+}
