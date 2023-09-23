@@ -28,7 +28,7 @@ const DEFAULT: GameContextType = {
   live: false,
 };
 
-export const GameContext = createContext<GameContextType>(TEST);
+export const GameContext = createContext<GameContextType>(DEFAULT);
 
 const { Provider } = GameContext;
 
