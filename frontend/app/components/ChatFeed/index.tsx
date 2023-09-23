@@ -59,7 +59,11 @@ function UserAction({ type }: { type: UserActionType }) {
       return (
         <div>
           <p>Vote for a player to eliminate...</p>
-          <PlayerTray />
+          <PlayerTray
+            onSelect={(player) => {
+              console.log("poop", player);
+            }}
+          />
         </div>
       );
     }

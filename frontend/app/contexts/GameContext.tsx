@@ -31,7 +31,7 @@ const DEFAULT: GameContextType = {
 };
 
 // TODO: Use `DEFAULT` game state
-const INITIAL = DEFAULT;
+const INITIAL = TEST;
 
 export const GameContext = createContext<GameContextType>(INITIAL);
 
