@@ -2,18 +2,20 @@
 
 import React, { useState, createContext, useContext, useEffect } from "react";
 import { io } from "socket.io-client";
-import { GameState } from "../types";
+import { Begin, GameState, Joining, StateChange } from "../types";
 import DUMMY_STATE from "./__test__/DUMMY_STATE";
 
 let socket;
 
 export type GameContextType = {
+  connected?: boolean; // undefined = loading...
   setPlayerReady: (ready: boolean) => void;
   live: boolean;
   state?: GameState;
 };
 
 const TEST: GameContextType = {
+  connected: true,
   setPlayerReady: () => {},
   live: true,
   state: DUMMY_STATE,
@@ -21,6 +23,7 @@ const TEST: GameContextType = {
 
 // TODO: Use `DEFAULT` game state
 const DEFAULT: GameContextType = {
+  connected: undefined,
   setPlayerReady: () => {},
   live: false,
 };
@@ -30,7 +33,11 @@ export const GameContext = createContext<GameContextType>(TEST);
 const { Provider } = GameContext;
 
 export const GameProvider = (props: { children: React.ReactNode }) => {
-  const [playerReady, setPlayerReady] = useState(false);
+  const [connected, setConnected] = useState<boolean>();
+  const [playerReady, _setPlayerReady] = useState(false);
+  const setPlayerReady = (ready: boolean) => {
+    _setPlayerReady(ready);
+  };
   const [state, setState] = useState<GameState | undefined>(TEST.state);
 
   const socketInitializer = async () => {
@@ -43,11 +50,22 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
     socket = io(url);
 
     socket.on("connect", () => {
-      console.log("connected");
+      setConnected(true);
+    });
+    socket.on("disconnect", () => {
+      setConnected(false);
     });
 
-    socket.on("update-input", (msg) => {
-      console.log(msg);
+    socket.on("joining", (event: Joining) => {
+      console.log(event);
+    });
+
+    socket.on("begin", (event: Begin) => {
+      console.log(event);
+    });
+
+    socket.on("stateChange", (event: StateChange) => {
+      console.log(event);
     });
   };
   useEffect(() => void socketInitializer(), []);
@@ -57,7 +75,8 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
   return (
     <Provider
       value={{
-        setPlayerReady: (ready: boolean) => setPlayerReady(ready),
+        connected,
+        setPlayerReady,
         live,
         state,
       }}

@@ -31,3 +31,5 @@ export interface MessageDetails {
   playerId: string;
   text: string;
 }
+
+export * from '../../../backend/src/events'
