@@ -12,13 +12,6 @@ function CountdownTimer({ duration, ends }: Props) {
   );
 
   useEffect(() => {
-    console.log(
-      "new Date(ends).getTime() - Date.now()",
-      new Date(ends).getTime() - Date.now(),
-      "duration: ",
-      duration
-    );
-
     const interval = setInterval(
       () =>
         setProgress(
@@ -40,15 +33,20 @@ function CountdownTimer({ duration, ends }: Props) {
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.outer}>
+      <div
+        className={styles.outer}
+        style={{
+          height: progressPercent > 99 ? "0" : "1rem",
+          marginTop: progressPercent > 99 ? "0" : "1rem",
+        }}
+      >
         <div
           className={styles.inner}
-          style={{ width: `${progressPercent}%` }}
+          style={{
+            width: `${progressPercent}%`,
+          }}
         />
       </div>
-      {progress}
-      <br />
-      {progressPercent}
     </div>
   );
 }

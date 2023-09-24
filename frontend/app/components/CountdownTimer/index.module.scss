@@ -10,6 +10,8 @@
     height: 0.9em;
     background-color: rgba(255, 255, 255, 0.1);
     opacity: 0.78;
+    will-change: height;
+    transition: height 250ms linear, margin 250ms linear;
 
     .inner {
       height: 100%;
