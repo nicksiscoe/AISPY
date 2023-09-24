@@ -113,74 +113,57 @@ const collectVotes = async (
 const getAnswerFromAi = async (
   game: Game,
   questionContents: string,
-  questionId: number,
-  attempts: number
+  questionId: number
 ): Promise<Answer & GameMessageMetadata> => {
-  if (attempts < 1) {
-    return {
-      data: {
-        contents: 'AI API is simply refusing to cooporate.',
-        questionId,
-      },
-      id: Date.now(),
-      senderId: game.aiId,
-      sentAt: new Date().toUTCString(),
-      type: 'answer',
-    };
-  }
-  try {
-    console.log('About to test for question to AI ... ');
-    const baseUrl = 'https://hack23-ai-ac11aa57a2eb.herokuapp.com/';
-    const playerList = {
-      player_list: game.state.players
-        .filter(p => p.id !== game.aiId)
-        .map(p => p.name),
-    };
-    const newSessionSuffix = '/new-session/ai-amount/1';
+  console.log('About to test for question to AI ... ');
+  const baseUrl = 'https://hack23-ai-ac11aa57a2eb.herokuapp.com/';
+  const playerList = {
+    player_list: game.state.players
+      .filter(p => p.id !== game.aiId)
+      .map(p => p.name),
+  };
+  const newSessionSuffix = '/new-session/ai-amount/1';
 
-    // 1. start session, obtain session id
-    const newSessionUrl = baseUrl + newSessionSuffix; // POST
-    const sessionBody = playerList;
-    const sessionResponse = await axios.post(newSessionUrl, sessionBody);
-    console.log('session response data:', sessionResponse.data);
+  // 1. start session, obtain session id
+  const newSessionUrl = baseUrl + newSessionSuffix; // POST
+  const sessionBody = playerList;
+  const sessionResponse = await axios.post(newSessionUrl, sessionBody);
+  console.log('session response data:', sessionResponse.data);
 
-    // example session start log
-    // response from ai {
-    //   ai_players: [ 'billy' ],
-    //   session_id: '79f89a3b-66b3-47d7-96c4-63352193cca0'
-    // }
+  // example session start log
+  // response from ai {
+  //   ai_players: [ 'billy' ],
+  //   session_id: '79f89a3b-66b3-47d7-96c4-63352193cca0'
+  // }
 
-    const sessionID = sessionResponse.data.session_id;
-    const aiName = sessionResponse.data.ai_players[0]; // use first result for testing
+  const sessionID = sessionResponse.data.session_id;
+  const aiName = sessionResponse.data.ai_players[0]; // use first result for testing
 
-    // 2. assemble question url
-    const questionUrl = baseUrl + '/ai/' + aiName + '/session/' + sessionID;
+  // 2. assemble question url
+  const questionUrl = baseUrl + '/ai/' + aiName + '/session/' + sessionID;
 
-    // 3. send question
-    const questionResponse: {
-      data: string[];
-    } = await axios.post(questionUrl, questionContents);
+  // 3. send question
+  const questionResponse: {
+    data: string[];
+  } = await axios.post(questionUrl, questionContents);
 
-    // 4. return response to front end
-    console.log('question response', questionResponse.data);
+  // 4. return response to front end
+  console.log('question response', questionResponse.data);
 
-    const AI_TEXT_RESPONSE = questionResponse.data.at(0);
-    // TODO: @alex do something with AI_TEXT_RESPONSE, it is the legit AI response;
+  // const AI_TEXT_RESPONSE = questionResponse.data.at(0);
+  // // TODO: @alex do something with AI_TEXT_RESPONSE, it is the legit AI response;
 
-    console.log('AI_TEXT_RESPONSE: ', AI_TEXT_RESPONSE);
-    return {
-      data: {
-        contents: questionResponse.data.at(0) ?? 'FUCK',
-        questionId,
-      },
-      id: Date.now(),
-      senderId: game.aiId,
-      sentAt: new Date().toUTCString(),
-      type: 'answer',
-    };
-  } catch (err) {
-    return getAnswerFromAi(game, questionContents, questionId, attempts - 1);
-  }
+  // console.log('AI_TEXT_RESPONSE: ', AI_TEXT_RESPONSE);
+  return {
+    data: {
+      contents: questionResponse.data.join('') ?? 'FUCK',
+      questionId,
+    },
+    id: Date.now(),
+    senderId: game.aiId,
+    sentAt: new Date().toUTCString(),
+    type: 'answer',
+  };
 };
 
 const next = async (game: Game): Promise<Game> => {
@@ -216,7 +199,7 @@ const next = async (game: Game): Promise<Game> => {
     }
     case 'waitForAnswer': {
       const answer = await (latestEvent.answererId === game.aiId
-        ? getAnswerFromAi(game, latestEvent.contents, latestEvent.questionId, 5)
+        ? getAnswerFromAi(game, latestEvent.contents, latestEvent.questionId)
         : waitForMessageFrom(
             'answer',
             game.sockets.find(s => s.id === latestEvent.answererId)!
@@ -273,7 +256,6 @@ function updateState<T extends StateEvent['type']>(
 
     case 'handleVoteResults': {
       const { ...votes } = maybeMessage! as VoteResults & GameMessageMetadata;
-      console.log('got votes!', votes);
       const playerIds = Object.values(votes.results);
       const voteCounts = Object.fromEntries(
         Object.values(votes.results).map(id => [
@@ -281,21 +263,32 @@ function updateState<T extends StateEvent['type']>(
           playerIds.filter(pid => pid === id).length,
         ])
       );
-      console.log('voteCounts: ', voteCounts);
 
       const maxVotes = Math.max(...Object.values(voteCounts));
 
-      const [loserId] = Object.entries(voteCounts).find(
-        ([, count]) => count === maxVotes
-      ) ?? ['ai'];
+      const [loserId] =
+        Object.entries(voteCounts).find(([, count]) => count === maxVotes) ??
+        [];
 
-      const latestEvent = createStateEvent('gameOver', 9999, {
-        outcome: loserId === 'ai' ? 'humansWin' : 'aiWins',
-      });
+      const latestEvent =
+        loserId === 'ai'
+          ? createStateEvent('gameOver', 9999, { outcome: 'humansWin' })
+          : // Get the number of remaining humans after eliminating `loserId`
+          state.players.filter(p => p.id !== 'ai' && p.id !== loserId).length <=
+            1
+          ? createStateEvent('gameOver', 9999, { outcome: 'aiWins' })
+          : createStateEvent('beginRound', params.BEGIN_ROUND_DURATION, {});
 
       return {
         ...state,
         latestEvent,
+        players: state.players.map(p => ({
+          ...p,
+          status:
+            p.status === 'eliminated' || p.id === loserId
+              ? 'eliminated'
+              : 'active',
+        })),
         rounds: [
           {
             ...state.rounds[0],
