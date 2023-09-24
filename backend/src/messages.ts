@@ -1,3 +1,10 @@
+export type GameMessage = Answer | Join | Question | Vote;
+
+/**
+ * The type to provide socket.io for events
+ */
+export type ClientToServerEvents = { message: (msg: GameMessage) => void };
+
 /** A player's response to a question */
 export type Answer = M<
   'answer',
@@ -26,8 +33,6 @@ export type Vote = M<
     /* TBD */
   }
 >;
-
-export type GameMessage = Answer | Join | Question | Vote;
 
 type M<T extends string, D = void> = (D extends object ? { data: D } : {}) & {
   type: T;

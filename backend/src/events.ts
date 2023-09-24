@@ -6,6 +6,13 @@ import { GameState, Message, Player } from './state';
 export type GameEvent = Begin | Crash | Joining | NewMessage | StateChange;
 
 /**
+ * The type to provide socket.io for events
+ */
+export type ServerToClientEvents = {
+  message: (e: GameEvent, ack?: (e: number) => void) => void;
+};
+
+/**
  * Something has gone horribly wrong and the game is over
  */
 export type Crash = E<'crash'>;
@@ -33,7 +40,8 @@ export type Begin = E<'begin', GameState>;
 /** A question or answer is submitted */
 export type NewMessage = E<'message', Message>;
 
-type E<T extends string, D = void> = (D extends object ? { data: D } : {}) & {
+type E<T extends string, D = {}> = {
+  data: D;
   /**
    * When this current step ends (as a date string)
    * i.e., when the next event/step will be sent by the server
