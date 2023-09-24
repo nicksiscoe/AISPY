@@ -31,6 +31,8 @@ export type RoundPhase =
     }
   | {
       type: 'vote';
+      /** player ID */
+      eliminated?: string;
     };
 
 export interface Message {
