@@ -14,9 +14,9 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
 }));
 
 export default function CurrentPlayer() {
-  const context = useGameContext();
-  const player = context.state?.players.find((p) => p.id === context.playerId);
-  const splitName = player?.name.split(" ");
+  const { me } = useGameContext();
+  // const player = context.state?.players.find((p) => p.id === context.playerId);
+  const splitName = me?.name.split(" ");
   let initials = null;
   if (splitName) {
     initials = splitName!
@@ -37,7 +37,7 @@ export default function CurrentPlayer() {
     setModalOpen(false);
   };
 
-  if (!player) return null;
+  if (!me) return null;
 
   return (
     <Stack direction="row" spacing={2}>
@@ -47,18 +47,14 @@ export default function CurrentPlayer() {
         variant="dot"
       >
         {/* Add a clickable element to open the modal */}
-        <Avatar alt={player?.name} onClick={openModal}>
+        <Avatar alt="name" onClick={openModal}>
           {initials}
         </Avatar>
       </StyledBadge>
 
       {/* Conditionally render the PlayerModal component */}
       {isModalOpen && (
-        <PlayerModal
-          player={player}
-          isOpen={isModalOpen}
-          onClose={closeModal}
-        />
+        <PlayerModal player={me} isOpen={isModalOpen} onClose={closeModal} />
       )}
     </Stack>
   );

@@ -6,7 +6,6 @@ import { Player } from "@/app/types";
 import styles from "./index.module.scss";
 import { Avatar, Badge, styled } from "@mui/material";
 import PlayerPic from "../PlayerPic";
-import EliminatedModal from "../EliminatedModal";
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
@@ -42,14 +41,14 @@ const SmallAvatar = styled(Avatar)(({ theme }) => ({
   height: 22,
   border: `px solid ${theme.palette.background.paper}`,
 }));
- 
+
 interface Props {
   onSelect?: (player: Player) => void;
   showBadges?: boolean;
 }
 
 export default function PlayerTray({ showBadges = true, ...props }: Props) {
-  const { state } = useGameContext();
+  const { playerId, state } = useGameContext();
 
   const [selectedPlayer, setSelectedPlayer] = React.useState<Player>();
   const [openPlayer, setOpenPlayer] = React.useState<Player>();
@@ -57,11 +56,15 @@ export default function PlayerTray({ showBadges = true, ...props }: Props) {
   return (
     <div className={styles.wrapper}>
       <Stack direction="row" spacing={2}>
-        {state?.players.map((player) => {
+        {state?.players.map(player => {
           const isSelected = selectedPlayer?.id === player.id;
           let wrapperStyle = "";
           if (isSelected) {
             wrapperStyle = styles.selected;
+          }
+          // Don't show current player
+          if (player.id === playerId) {
+            return null;
           }
           return (
             <PlayerPic
@@ -77,7 +80,7 @@ export default function PlayerTray({ showBadges = true, ...props }: Props) {
                   setOpenPlayer(player);
                 }
               }}
-              overlay={isSelected && <div className={styles.target}>⭕️</div>}
+              overlay={isSelected && <div className={styles.target}>✅</div>}
             />
           );
         })}

@@ -1,17 +1,22 @@
 "use client";
 
-import React, { useState, createContext, useContext, useEffect } from "react";
-import { Answer, GameEvent, GameState, Player, Question, Vote } from "../types";
-import DUMMY_STATE from "./__test__/DUMMY_STATE";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { socket } from "../lib/socket";
+import { Answer, GameEvent, GameState, Player, Question, Vote } from "../types";
 
 export type GameContextType = {
   connected?: boolean; // undefined = loading...
   live: boolean;
   playerId?: string;
+  playerMap: { [playerId: string]: Player };
+  me?: Player;
   state?: GameState;
-  prevChange?: Date;
-  nextChange?: Date;
   actions: {
     attemptJoin: () => void;
     question: (data: Question["data"]) => void;
@@ -20,53 +25,16 @@ export type GameContextType = {
   };
 };
 
-const TEST: GameContextType = {
-  connected: true,
-  live: true,
-  playerId: "test1",
-  state: DUMMY_STATE,
-  prevChange: new Date(),
-  nextChange: new Date(new Date().setMinutes(new Date().getMinutes() + 1)),
-  actions: {
-    attemptJoin: () => {},
-    question: () => {},
-    answer: () => {},
-    vote: () => {},
-  },
-};
-const DEFAULT: GameContextType = {
-  connected: undefined,
-  live: false,
-  actions: {
-    attemptJoin: () => {},
-    question: () => {},
-    answer: () => {},
-    vote: () => {},
-  },
-};
-
-// TODO: Use `DEFAULT` game state
-const INITIAL = DEFAULT;
-
-export const GameContext = createContext<GameContextType>(INITIAL);
+export const GameContext = createContext<GameContextType>(undefined!);
 
 const { Provider } = GameContext;
 
 export const GameProvider = (props: { children: React.ReactNode }) => {
   const [connected, setConnected] = useState<boolean>();
-  const [playerId, setPlayerId] = useState<string | undefined>(
-    INITIAL.playerId
-  );
-  const [prevChange, setPrevChange] = useState<Date | undefined>(
-    INITIAL.prevChange
-  );
-  const [nextChange, setNextChange] = useState<Date | undefined>(
-    INITIAL.nextChange
-  );
-  const [state, setState] = useState<GameState | undefined>(INITIAL.state);
+  const [playerId, setPlayerId] = useState<string | undefined>();
+  const [state, setState] = useState<GameState | undefined>();
 
   useEffect(() => {
-    if (!socket) return;
     socket.connect();
 
     const onConnect = () => {
@@ -80,42 +48,50 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
       localStorage.clear();
     };
     const onMessage = (event: GameEvent) => {
+      console.log("message received", event);
+
       switch (event.type) {
         case "joining":
-          return setPlayerId(event.data.playerId);
+          return setPlayerId(event.data.playerId); // successful
         case "stateChange": {
           const stateEvent = event.data.latestEvent;
           switch (stateEvent.type) {
             case "beginGame":
+            case "beginRound":
+            case "message":
+            case "waitForQuestion":
+            case "waitForAnswer":
+            case "waitForVotes": {
               setState(event.data);
-              if (stateEvent.ends) {
-                setPrevChange(new Date());
-                setNextChange(new Date(stateEvent.ends));
-              }
-              return;
-            case "beginRound": {
-              // TODO: no-op?
+              setPrevChance(nextChange);
+              setNextChange(new Date(stateEvent.ends));
               return;
             }
           }
-          return;
+          break;
+        }
+        case "crash": {
+          console.error("Game state machine crashed");
+          break;
         }
         default: {
           console.error("Unhandled Socket Message", JSON.stringify(event));
+          break;
         }
       }
     };
 
     socket.on("connect", onConnect);
-    socket.on("connect_error", onConnectError);
+    socket.on("connect_error", err => console.error(err));
     socket.on("disconnect", onDisconnect);
     socket.on("message", onMessage);
 
+    // TODO: Remove this stupid auto-join and royce test API
     socket.emit("message", { type: "join" });
+
     return () => {
-      if (!socket) return;
       socket.off("connect", onConnect);
-      socket.off("connect_error", onConnectError);
+      // socket.off("connect_error", onConnectError);
       socket.off("disconnect", onDisconnect);
       socket.off("message", onMessage);
       socket.close();
@@ -137,15 +113,19 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
 
   const live = !!state;
 
+  const playerMap = useMemo(
+    () => Object.fromEntries((state?.players ?? []).map(p => [p.id, p])),
+    [state?.players]
+  );
   return (
     <Provider
       value={{
         connected,
         live,
         playerId,
+        playerMap,
+        me: playerMap[playerId ?? ""],
         state,
-        prevChange,
-        nextChange,
         actions: {
           attemptJoin,
           question,

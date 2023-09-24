@@ -1,12 +1,26 @@
-export type StateEvent = BeginGame | BeginRound | NewMessage;
+export type StateEvent =
+  | BeginGame
+  | BeginRound
+  | GameOver
+  | HandleVoteResults
+  | NewMessage
+  | NextQuestionOrVote
+  | WaitForAnswer
+  | WaitForQuestion
+  | WaitForVotes;
 
 /** A question or answer is submitted */
 export type NewMessage = SE<'message', UserMessage>;
 
 /** All players have joined and the game is beginning */
 export type BeginGame = SE<'beginGame'>;
-
-export type BeginRound = SE<'beginRound', { index: number }>;
+export type BeginRound = SE<'beginRound'>;
+export type WaitForQuestion = SE<'waitForQuestion', { askerId: string }>;
+export type WaitForAnswer = SE<'waitForAnswer', UserMessage>;
+export type WaitForVotes = SE<'waitForVotes'>;
+export type HandleVoteResults = SE<'handleVoteResults', VoteResults>;
+export type NextQuestionOrVote = SE<'nextQuestionOrVote', UserMessage>;
+export type GameOver = SE<'gameOver', { outcome: 'humansWin' | 'aiWins' }>;
 
 export interface GameState {
   id: string;
@@ -21,6 +35,10 @@ export interface Player extends Persona {
   status: 'active' | 'eliminated';
 }
 
+export type VoteResults = {
+  results: { [voterId: string]: string };
+};
+
 export interface Persona {
   age: number;
   bio: string;
@@ -29,33 +47,18 @@ export interface Persona {
 }
 
 export type Round = {
-  currentPhase: RoundPhase;
-  index: number;
-  previousPhases: RoundPhase[];
-  status: 'ended' | 'ongoing';
+  messages: UserMessage[];
+  phase: 'chat' | 'vote' | 'ended';
 };
 
-export type RoundPhase =
-  | {
-      type: 'chat';
-      messages: UserMessage[];
-    }
-  | {
-      type: 'vote';
-      /** player ID */
-      eliminated?: string;
-    };
-
 export type UserMessage = {
+  answererId: string;
+  askerId: string;
   contents: string;
-  /** player ID */
-  from: string;
-  id: string;
+  messageId: number;
   messageType: 'answer' | 'question';
-  /** Date string */
-  sentAt: number;
-  // /** player ID */
-  to: string;
+  questionId: number;
+  sentAt: string;
 };
 
 type SE<T extends string, D = {}> = D & {

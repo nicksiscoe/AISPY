@@ -11,7 +11,7 @@ export type Answer = M<
   {
     contents: string;
     /** Message ID of the question that this answers */
-    questionId: string;
+    questionId: number;
   }
 >;
 
@@ -22,7 +22,7 @@ export type Question = M<
   'question',
   {
     /** The ID of the player that the question is for */
-    askeeId: string;
+    answererId: string;
     contents: string;
   }
 >;
@@ -30,7 +30,7 @@ export type Question = M<
 export type Vote = M<
   'vote',
   {
-    /* TBD */
+    playerId: string;
   }
 >;
 
