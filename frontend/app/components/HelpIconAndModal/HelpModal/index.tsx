@@ -3,7 +3,7 @@ import Modal from "@mui/material/Modal";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import { Player } from "@/app/types";
+import styles from "../../../styles/index.module.scss";
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -18,21 +18,8 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
       aria-labelledby="modal-title"
       aria-describedby="modal-description"
     >
-      <div
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "50%",
-          backgroundColor: "black",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-          padding: 12,
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <div className={styles.modalStyle}>
+        <div className={styles.modalTitle}>
           <Typography variant="h6" id="modal-title">
             Rules
           </Typography>

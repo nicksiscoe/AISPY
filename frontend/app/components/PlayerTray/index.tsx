@@ -6,6 +6,7 @@ import { Player } from "@/app/types";
 import styles from "./index.module.scss";
 import { Avatar, Badge, styled } from "@mui/material";
 import PlayerPic from "../PlayerPic";
+import EliminatedModal from "../EliminatedModal";
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
