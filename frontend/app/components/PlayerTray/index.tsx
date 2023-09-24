@@ -56,7 +56,7 @@ export default function PlayerTray({ showBadges = true, ...props }: Props) {
   return (
     <div className={styles.wrapper}>
       <Stack direction="row" spacing={2}>
-        {state?.players.map((player) => {
+        {state?.players.map(player => {
           const isSelected = selectedPlayer?.id === player.id;
           let wrapperStyle = "";
           if (isSelected) {
@@ -80,7 +80,7 @@ export default function PlayerTray({ showBadges = true, ...props }: Props) {
                   setOpenPlayer(player);
                 }
               }}
-              overlay={isSelected && <div className={styles.target}>⭕️</div>}
+              overlay={isSelected && <div className={styles.target}>✅</div>}
             />
           );
         })}

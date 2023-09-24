@@ -125,8 +125,10 @@ function UserAction({ type }: { type: UserActionType }) {
     case UserActionType.ASK: {
       const submitDisabled = didSubmit || !selectedPlayer;
       return (
-        <div>
-          <p>Select the player you&apos;d like to ask a question...</p>
+        <Fragment>
+          <p className={styles.label}>
+            Select the player you&apos;d like to ask a question
+          </p>
           <PlayerTray
             showBadges={false}
             onSelect={
@@ -139,7 +141,7 @@ function UserAction({ type }: { type: UserActionType }) {
                 : undefined
             }
           />
-          <div className={styles.text}>
+          <div className={styles.textAreaWrapper}>
             <textarea
               placeholder={"Ask a question..."}
               value={text}
@@ -158,13 +160,13 @@ function UserAction({ type }: { type: UserActionType }) {
               Send
             </button>
           </div>
-        </div>
+        </Fragment>
       );
     }
     case UserActionType.ANSWER: {
       const submitDisabled = didSubmit || text.length < 30;
       return (
-        <div className={styles.text}>
+        <div className={styles.textAreaWrapper}>
           <textarea
             placeholder={"Answer..."}
             value={text}
@@ -208,15 +210,12 @@ function UserAction({ type }: { type: UserActionType }) {
 }
 
 interface Props {
-  me: Player;
   state: GameState;
 }
 
-function ChatFeed({ me, state }: Props) {
+function ChatFeed({ state }: Props) {
   const { playerId, playerMap } = useGameContext();
-
   const scrollAnchorRef = useRef<HTMLDivElement>(null);
-
   const [userActionType, setUserActionType] = useState<UserActionType>();
 
   useEffect(() => {
@@ -225,7 +224,7 @@ function ChatFeed({ me, state }: Props) {
       block: "end",
     });
 
-    if (!state?.rounds.length) return;
+    if (!state.rounds.length) return;
     const ongoingRound = state.rounds.at(0);
     switch (ongoingRound?.phase) {
       case undefined: {
@@ -319,9 +318,6 @@ function ChatFeed({ me, state }: Props) {
               </Fragment>
             );
           })}
-          <div className={styles.welcome}>
-            <p>Welcome, {me.name}.</p>
-          </div>
         </div>
       </div>
       {userActionType && (

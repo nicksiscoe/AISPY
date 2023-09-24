@@ -43,9 +43,7 @@ function Game() {
       <div className={styles.trayWrapper}>
         <PlayerTray />
       </div>
-      {context.state && context.me && (
-        <ChatFeed state={context.state} me={context.me} />
-      )}
+      {context.state && context.me && <ChatFeed state={context.state} />}
       <EliminatedModal
         isOpen={showPlayerEliminated}
         onClose={() => setShowPlayerEliminated(false)}
