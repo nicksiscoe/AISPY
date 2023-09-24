@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useGameContext } from "@/app/contexts/GameContext";
 import styles from "./index.module.scss";
 

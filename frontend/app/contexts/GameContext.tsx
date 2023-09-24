@@ -56,8 +56,12 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
     const onConnect = () => {
       setConnected(true);
     };
+    const onConnectError = (msg: string) => {
+      console.error(msg);
+    };
     const onDisconnect = () => {
       setConnected(false);
+      localStorage.clear();
     };
     const onJoining = (event: Joining) => {
       setPlayerId(event.data.playerId);
@@ -78,6 +82,7 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
     };
 
     socket.on("connect", onConnect);
+    socket.on("connect_error", onConnectError);
     socket.on("disconnect", onDisconnect);
     socket.on("joining", onJoining);
     socket.on("begin", onBegin);
@@ -87,6 +92,7 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
       if (!socket) return;
 
       socket.off("connect", onConnect);
+      socket.off("connect_error", onConnectError);
       socket.off("disconnect", onDisconnect);
       socket.off("joining", onJoining);
       socket.off("begin", onBegin);
@@ -97,10 +103,6 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
   const attemptJoin = () => {
     socket.emit("message", { type: "join" });
   };
-  // TODO: REMOVE (ALEX WANTED DIS)
-  useEffect(() => {
-    if (connected) attemptJoin();
-  }, [connected]);
 
   const live = !!state;
 
