@@ -4,10 +4,8 @@ import PlayerModal from "../PlayerModal";
 import { useGameContext } from "@/app/contexts/GameContext";
 import { Player } from "@/app/types";
 import styles from "./index.module.scss";
-<<<<<<< Updated upstream
+import { Avatar, Badge, styled } from "@mui/material";
 import PlayerPic from "../PlayerPic";
-
-=======
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
@@ -44,7 +42,6 @@ const SmallAvatar = styled(Avatar)(({ theme }) => ({
   border: `px solid ${theme.palette.background.paper}`,
 }));
  
->>>>>>> Stashed changes
 interface Props {
   onSelect?: (player: Player) => void;
   showBadges?: boolean;

@@ -1,9 +1,3 @@
-<<<<<<< Updated upstream
-import * as React from "react";
-import Stack from "@mui/material/Stack";
-import { useGameContext } from "@/app/contexts/GameContext";
-import PlayerPic from "../PlayerPic";
-=======
 import React, { useState } from 'react';
 import { styled } from '@mui/material/styles';
 import Badge from '@mui/material/Badge';
@@ -18,7 +12,6 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
     boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
   },
 }));
->>>>>>> Stashed changes
 
 export default function CurrentPlayer() {
   const context = useGameContext();
@@ -28,14 +21,6 @@ export default function CurrentPlayer() {
   if (splitName) {
     initials = splitName!
       .map((part: string) => part.charAt(0).toUpperCase())
-<<<<<<< Updated upstream
-      .join("");
-  }
-  if (!player) return null;
-  return (
-    <Stack direction="row" spacing={2}>
-      <PlayerPic player={player} size={28} showBadge={false} />
-=======
       .join('');
   }
 
@@ -73,7 +58,6 @@ export default function CurrentPlayer() {
           onClose={closeModal}
         />
       )}
->>>>>>> Stashed changes
     </Stack>
   );
 }

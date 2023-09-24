@@ -48,7 +48,7 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
   const [nextChange, setNextChange] = useState<Date | undefined>(
     INITIAL.nextChange
   );
-  const [state, setState] = useState<GameState | undefined>(TEST.state);
+  const [state, setState] = useState<GameState | undefined>(INITIAL.state);
 
   useEffect(() => {
     if (!socket) return;
