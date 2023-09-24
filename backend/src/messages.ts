@@ -11,7 +11,7 @@ export type Answer = M<
   {
     contents: string;
     /** Message ID of the question that this answers */
-    questionId: string;
+    questionId: number;
   }
 >;
 

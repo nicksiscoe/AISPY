@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { BroadcastOperator, Socket } from 'socket.io';
-import * as params from './params';
 import { ServerToClientEvents } from './events';
 import {
   Answer,
@@ -9,7 +8,8 @@ import {
   Question,
 } from './messages';
 import { PERSONAS } from './mocks';
-import { GameState, Round, StateEvent, UserMessage } from './state';
+import * as params from './params';
+import { GameState, StateEvent, UserMessage } from './state';
 import {
   createGameEvent,
   createStateEvent,
@@ -27,12 +27,6 @@ export interface Game {
   sockets: GameSocket[];
   state: GameState;
 }
-
-type GameMessageWithSender = GameMessage & {
-  id: number;
-  senderId: string;
-  sentAt: string;
-};
 
 type GameMessageMetadata = {
   id: number;
@@ -84,9 +78,70 @@ const waitForMessageFrom = async <
   });
 };
 
+const getAnswerFromAi = async (
+  game: Game,
+  questionContents: string,
+  questionId: number
+): Promise<Answer & GameMessageMetadata> => {
+  console.log('About to test for question to AI ... ');
+  const baseUrl = 'https://hack23-ai-ac11aa57a2eb.herokuapp.com/';
+  const playerList = {
+    player_list: game.state.players
+      .filter(p => p.id !== game.aiId)
+      .map(p => p.name),
+  };
+  const newSessionSuffix = '/new-session/ai-amount/1';
+
+  // 1. start session, obtain session id
+  const newSessionUrl = baseUrl + newSessionSuffix; // POST
+  const sessionBody = playerList;
+  const sessionResponse = await axios.post(newSessionUrl, sessionBody);
+  console.log('session response data:', sessionResponse.data);
+
+  // example session start log
+  // response from ai {
+  //   ai_players: [ 'billy' ],
+  //   session_id: '79f89a3b-66b3-47d7-96c4-63352193cca0'
+  // }
+
+  const sessionID = sessionResponse.data.session_id;
+  const aiName = sessionResponse.data.ai_players[0]; // use first result for testing
+
+  // 2. assemble question url
+  const questionUrl = baseUrl + '/ai/' + aiName + '/session/' + sessionID;
+
+  // 3. send question
+  const questionResponse: {
+    data: string[];
+  } = await axios.post(questionUrl, questionContents);
+
+  // 4. return response to front end
+  console.log('question response', questionResponse.data);
+
+  const AI_TEXT_RESPONSE = questionResponse.data.at(0);
+  // TODO: @alex do something with AI_TEXT_RESPONSE, it is the legit AI response;
+
+  console.log('AI_TEXT_RESPONSE: ', AI_TEXT_RESPONSE);
+  return {
+    data: {
+      contents: questionResponse.data.at(0) ?? 'FUCK',
+      questionId,
+    },
+    id: Date.now(),
+    senderId: game.aiId,
+    sentAt: new Date().toUTCString(),
+    type: 'answer',
+  };
+};
+
 const next = async (game: Game): Promise<Game> => {
   const { latestEvent } = game.state;
   console.log(`Run step ${latestEvent.type}`);
+
+  if (game.sockets.some(s => s.disconnected)) {
+    throw new Error('Stopping game because someone disconnected');
+  }
+
   switch (latestEvent.type) {
     // Begin game is handled a litte weirdly cuz it's the initialization event
     case 'beginGame': {
@@ -107,54 +162,17 @@ const next = async (game: Game): Promise<Game> => {
         game.sockets.find(s => s.id === latestEvent.askerId)!
       );
 
-      // if target is ai
-
-      console.log('about to send to ai...');
-
       const state = updateState(game.state, 'waitForAnswer', question);
-      // get completion from AI and use in `emitStateAndWait` to submit anser
-
-      console.log('About to test for question to AI ... ');
-      const baseUrl = 'https://hack23-ai-ac11aa57a2eb.herokuapp.com/';
-      const playerList = { player_list: ['Miller', 'Royce', 'Alex', 'Nick'] };
-      const newSessionSuffix = '/new-session/ai-amount/1';
-
-      // 1. start session, obtain session id
-      const newSessionUrl = baseUrl + newSessionSuffix; // POST
-      const sessionBody = playerList;
-      const sessionResponse = await axios.post(newSessionUrl, sessionBody);
-      console.log('session response data:', sessionResponse.data);
-
-      // example session start log
-      // response from ai {
-      //   ai_players: [ 'billy' ],
-      //   session_id: '79f89a3b-66b3-47d7-96c4-63352193cca0'
-      // }
-
-      const sessionID = sessionResponse.data.session_id;
-      const aiName = sessionResponse.data.ai_players[0]; // use first result for testing
-
-      // 2. assemble question url
-      const questionUrl = baseUrl + '/ai/' + aiName + '/session/' + sessionID;
-
-      // 3. send question
-      const questionResponse: {
-        data: string[];
-      } = await axios.post(questionUrl, question.data.contents);
-
-      // 4. return response to front end
-      console.log('question response', questionResponse.data);
-
-      const AI_TEXT_RESPONSE = questionResponse.data.at(0);
-      // TODO: @alex do something with AI_TEXT_RESPONSE, it is the legit AI response;
 
       return next(await emitStateAndWait({ ...game, state }));
     }
     case 'waitForAnswer': {
-      const answer = await waitForMessageFrom(
-        'answer',
-        game.sockets.find(s => s.id === latestEvent.answererId)!
-      );
+      const answer = await (latestEvent.answererId === game.aiId
+        ? getAnswerFromAi(game, latestEvent.contents, latestEvent.questionId)
+        : waitForMessageFrom(
+            'answer',
+            game.sockets.find(s => s.id === latestEvent.answererId)!
+          ));
 
       const state = updateState(game.state, 'nextQuestionOrVote', answer);
       return next(await emitStateAndWait({ ...game, state }));
@@ -238,7 +256,10 @@ function updateState<T extends StateEvent['type']>(
         .map(m => m.askerId);
 
       const eligibleAskers = state.players.filter(
-        p => !alreadyAsked.includes(p.id) && p.status !== 'eliminated'
+        p =>
+          !alreadyAsked.includes(p.id) &&
+          p.status !== 'eliminated' &&
+          p.id !== 'ai'
       );
 
       return {

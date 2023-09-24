@@ -41,7 +41,11 @@ io.on('connection', socket =>
       // If we're at quorum, create the game
       if (waitingSockets.length >= params.HUMAN_PLAYER_COUNT) {
         gameIdIndex++;
-        startGame(gameId, io.to(gameId), [...waitingSockets]);
+        try {
+          startGame(gameId, io.to(gameId), [...waitingSockets]);
+        } catch (err) {
+          console.error(`Game ${gameId} threw an error: `, gameId);
+        }
         waitingSockets.splice(0, waitingSockets.length);
       }
     })
