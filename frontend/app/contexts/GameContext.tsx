@@ -130,8 +130,10 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
 
     // TODO: Remove this stupid auto-join and royce test API
     socket.emit("message", { type: "join" });
-    socket.emit("TEST_API" as any, { hello: "world" });
-    // ^^^^
+
+    // this works - hold until alex confirmed stood up AI messaging
+    // console.log('Going to start an AI session.')
+    // socket.emit("TEST_AI" as any, { hello: "world" });
 
     return () => {
       if (!socket) return;

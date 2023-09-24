@@ -1,3 +1,4 @@
+import axios from 'axios';
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -46,9 +47,37 @@ io.on('connection', socket =>
     })
     // TODO: Remove after testing we can hit royce's api
     .on('TEST_AI' as any, async (data: any) => {
-      console.warn('Got TEST_AI data', data);
+      console.log('Got TEST_AI data', data);
 
       // TODO: @miller hit @royce's API successfully
+      const baseUrl = "https://hack23-ai-ac11aa57a2eb.herokuapp.com/";
+      const playerList = {"player_list": ["Miller", "Royce", "Alex", "Nick"]};
+      const newSessionSuffix = "/new-session/ai-amount/1";
+    
+      // 1. start session, obtain session id
+      const newSessionUrl = baseUrl + newSessionSuffix; // POST
+      const sessionBody = playerList;
+      const sessionResponse = await axios.post(newSessionUrl, sessionBody);
+      console.log('response from ai', sessionResponse.data)
+
+      // example log
+      // response from ai {
+      //   ai_players: [ 'billy' ],
+      //   session_id: '79f89a3b-66b3-47d7-96c4-63352193cca0'
+      // }
+
+      const sessionID = sessionResponse.data.session_id;
+      const aiName = sessionResponse.data.ai_players[0]; // use first result for testing
+
+      // 2. assemble session and ai personalities
+      const questionUrl = baseUrl + "/ai/" + aiName + "/session/" + sessionID;
+      const question = "Are raiders fans violent thugs?";
+
+      // 3. send question
+      const questionResponse = await axios.post(questionUrl, question);
+
+      // 4. return response to front end
+      console.log('question response', questionResponse.data);
     })
 );
 
