@@ -2,10 +2,10 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { ServerToClientEvents } from './events';
-import { GameSocket, createGame } from './game';
+import { GameSocket, startGame } from './game';
 import { ClientToServerEvents } from './messages';
 import * as params from './params';
-import { createEvent, createUntimedEvent } from './utils';
+import { createUntimedEvent } from './utils';
 
 const app = express();
 const httpServer = createServer(app);
@@ -42,8 +42,7 @@ io.on('connection', socket =>
       // If we're at quorum, create the game
       if (waitingSockets.length >= params.HUMAN_PLAYER_COUNT) {
         gameIdIndex++;
-        const game = createGame(gameId, waitingSockets);
-        io.to(gameId).emit('message', createEvent('begin', 10, game.state));
+        startGame(gameId, io.to(gameId), waitingSockets);
         waitingSockets.splice(0, waitingSockets.length);
       }
     })
