@@ -9,7 +9,7 @@ import {
 } from './messages';
 import { PERSONAS } from './mocks';
 import * as params from './params';
-import { GameState, StateEvent, UserMessage } from './state';
+import { GameState, Player, StateEvent, UserMessage } from './state';
 import {
   createGameEvent,
   createStateEvent,
@@ -177,6 +177,9 @@ const next = async (game: Game): Promise<Game> => {
       const state = updateState(game.state, 'nextQuestionOrVote', answer);
       return next(await emitStateAndWait({ ...game, state }));
     }
+    case 'waitForVotes': {
+      return game;
+    }
     default:
       return game;
   }
@@ -217,7 +220,40 @@ function updateState<T extends StateEvent['type']>(
       };
 
     case 'nextQuestionOrVote': {
-      return state;
+      const currentRound = state.rounds[0];
+      const { ...answer } = maybeMessage! as Answer & GameMessageMetadata;
+      const userMessage: UserMessage = {
+        ...answer.data,
+        answererId: answer.senderId,
+        askerId: answer.senderId,
+        messageId: answer.id,
+        messageType: 'answer',
+        questionId: answer.id,
+        sentAt: answer.sentAt,
+      };
+
+      const eligibleAskers = getEligibleAskers(state);
+      const isTimeToVote = eligibleAskers.length < 1;
+      const latestEvent = isTimeToVote
+        ? createStateEvent('waitForVotes', params.WAIT_FOR_VOTES_DURATION, {})
+        : createStateEvent(
+            'waitForQuestion',
+            params.WAIT_FOR_QUESTION_DURATION,
+            { askerId: pickOne(eligibleAskers)[0].id }
+          );
+
+      return {
+        ...state,
+        latestEvent,
+        rounds: [
+          {
+            ...state.rounds[0],
+            messages: [userMessage, ...state.rounds[0].messages],
+            phase: isTimeToVote ? 'vote' : 'chat',
+          },
+          ...state.rounds.slice(1),
+        ],
+      };
     }
 
     case 'waitForAnswer': {
@@ -250,17 +286,7 @@ function updateState<T extends StateEvent['type']>(
     }
 
     case 'waitForQuestion': {
-      // Get the players that haven't asked anything yet
-      const alreadyAsked = state.rounds[0].messages
-        .filter(m => m.messageType === 'question')
-        .map(m => m.askerId);
-
-      const eligibleAskers = state.players.filter(
-        p =>
-          !alreadyAsked.includes(p.id) &&
-          p.status !== 'eliminated' &&
-          p.id !== 'ai'
-      );
+      const eligibleAskers = getEligibleAskers(state);
 
       return {
         ...state,
@@ -277,3 +303,14 @@ function updateState<T extends StateEvent['type']>(
     }
   }
 }
+
+const getEligibleAskers = (state: GameState): Player[] => {
+  const alreadyAsked = state.rounds[0].messages
+    .filter(m => m.messageType === 'question')
+    .map(m => m.askerId);
+
+  return state.players.filter(
+    p =>
+      !alreadyAsked.includes(p.id) && p.status !== 'eliminated' && p.id !== 'ai'
+  );
+};

@@ -4,7 +4,8 @@ export type StateEvent =
   | NewMessage
   | NextQuestionOrVote
   | WaitForAnswer
-  | WaitForQuestion;
+  | WaitForQuestion
+  | WaitForVotes;
 
 /** A question or answer is submitted */
 export type NewMessage = SE<'message', UserMessage>;
@@ -14,6 +15,7 @@ export type BeginGame = SE<'beginGame'>;
 export type BeginRound = SE<'beginRound'>;
 export type WaitForQuestion = SE<'waitForQuestion', { askerId: string }>;
 export type WaitForAnswer = SE<'waitForAnswer', UserMessage>;
+export type WaitForVotes = SE<'waitForVotes'>;
 export type NextQuestionOrVote = SE<'nextQuestionOrVote', UserMessage>;
 
 export interface GameState {
