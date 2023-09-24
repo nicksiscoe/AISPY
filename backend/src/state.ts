@@ -10,9 +10,7 @@ export type NewMessage = SE<'message', UserMessage>;
 
 /** All players have joined and the game is beginning */
 export type BeginGame = SE<'beginGame'>;
-
 export type BeginRound = SE<'beginRound'>;
-
 export type WaitForQuestion = SE<'waitForQuestion', { askerId: string }>;
 export type WaitForAnswer = SE<'waitForAnswer', UserMessage>;
 

@@ -1,7 +1,7 @@
 import { BroadcastOperator, Socket } from 'socket.io';
 import * as params from './params';
 import { ServerToClientEvents } from './events';
-import { ClientToServerEvents, GameMessage } from './messages';
+import { ClientToServerEvents, GameMessage, Question } from './messages';
 import { PERSONAS } from './mocks';
 import { GameState, Round, StateEvent, UserMessage } from './state';
 import {
@@ -28,6 +28,12 @@ type GameMessageWithSender = GameMessage & {
   sentAt: string;
 };
 
+type GameMessageMetadata = {
+  id: number;
+  senderId: string;
+  sentAt: string;
+};
+
 const createGameState = (gameId: string, playerIds: string[]): GameState => ({
   latestEvent: createStateEvent('beginGame', params.BEGIN_GAME_DURATION, {}),
   id: gameId,
@@ -48,17 +54,20 @@ const emitStateAndWait = async (game: Game): Promise<Game> => {
   return game;
 };
 
-const waitForMessageFrom = async <T extends GameMessage['type']>(
+const waitForMessageFrom = async <
+  T extends GameMessage['type'],
+  M extends Extract<GameMessage, { type: T }>,
+>(
   messageType: T,
   socket: GameSocket
-): Promise<GameMessageWithSender> => {
-  return new Promise<GameMessageWithSender>(ok => {
+): Promise<M & GameMessageMetadata> => {
+  return new Promise<M & GameMessageMetadata>(ok => {
     console.log(`Waiting for a ${messageType} message from ${socket.id}`);
     socket.on('message', msg => {
       console.log(`Got a ${messageType} message from ${socket.id}`);
       if (msg.type === messageType) {
         ok({
-          ...msg,
+          ...(msg as M),
           id: Date.now(),
           senderId: socket.id,
           sentAt: new Date().toUTCString(),
@@ -77,12 +86,12 @@ const run = async (game: Game): Promise<Game> => {
       await emitStateAndWait(game);
       const updatedGame = {
         ...game,
-        state: updateState(game.state, 'beginRound'),
+        state: updateState(game.state, 'beginRound', null),
       };
       return run(await emitStateAndWait(updatedGame));
     }
     case 'beginRound': {
-      const state = updateState(game.state, 'waitForQuestion');
+      const state = updateState(game.state, 'waitForQuestion', null);
       return run(await emitStateAndWait({ ...game, state }));
     }
     case 'waitForQuestion': {
@@ -91,7 +100,7 @@ const run = async (game: Game): Promise<Game> => {
         game.sockets.find(s => s.id === latestEvent.askerId)!
       );
 
-      const state = applyMessageToState(game.state, question);
+      const state = updateState(game.state, 'waitForAnswer', question);
       return run(await emitStateAndWait({ ...game, state }));
     }
     default:
@@ -109,21 +118,38 @@ export const startGame = async (
   await run({ aiId, broadcaster, sockets, state });
 };
 
-const applyMessageToState = (
+function updateState<T extends StateEvent['type']>(
   state: GameState,
-  message: GameMessageWithSender
-): GameState => {
-  switch (message.type) {
-    case 'question': {
-      const currentRound = state.rounds[0];
+  nextEvent: T,
+  maybeMessage: 'waitForAnswer' extends T
+    ? Question & GameMessageMetadata
+    : null
+): GameState {
+  switch (nextEvent) {
+    case 'beginGame':
+      return state;
 
+    case 'beginRound':
+      return {
+        ...state,
+        latestEvent: createStateEvent(
+          'beginRound',
+          params.BEGIN_ROUND_DURATION,
+          {}
+        ),
+        rounds: [...state.rounds, { messages: [], phase: 'chat' }],
+      };
+
+    case 'waitForAnswer': {
+      const currentRound = state.rounds[0];
+      const { ...question } = maybeMessage!;
       const userMessage: UserMessage = {
-        ...message.data,
-        askerId: message.senderId,
-        messageId: message.id,
+        ...question.data,
+        askerId: question.senderId,
+        messageId: question.id,
         messageType: 'question',
-        questionId: message.id,
-        sentAt: message.sentAt,
+        questionId: question.id,
+        sentAt: question.sentAt,
       };
 
       return {
@@ -142,27 +168,6 @@ const applyMessageToState = (
         ],
       };
     }
-    default: {
-      throw new Error(`unhandled message type ${message.type}`);
-    }
-  }
-};
-
-const updateState = (
-  state: GameState,
-  nextEvent: Exclude<StateEvent['type'], 'beginGame'>
-): GameState => {
-  switch (nextEvent) {
-    case 'beginRound':
-      return {
-        ...state,
-        latestEvent: createStateEvent(
-          'beginRound',
-          params.BEGIN_ROUND_DURATION,
-          {}
-        ),
-        rounds: [...state.rounds, { messages: [], phase: 'chat' }],
-      };
 
     case 'waitForQuestion': {
       // Get the players that haven't asked anything yet
@@ -171,7 +176,10 @@ const updateState = (
         .map(m => m.askerId);
 
       const eligibleAskers = state.players.filter(
-        p => !alreadyAsked.includes(p.id) && p.status !== 'eliminated'
+        p =>
+          !alreadyAsked.includes(p.id) &&
+          p.status !== 'eliminated' &&
+          p.id !== 'ai'
       );
 
       return {
@@ -188,4 +196,4 @@ const updateState = (
       throw new Error(`unhandled event type ${nextEvent}`);
     }
   }
-};
+}
