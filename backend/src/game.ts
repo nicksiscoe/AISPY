@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { BroadcastOperator, Socket } from 'socket.io';
 import * as params from './params';
 import { ServerToClientEvents } from './events';
@@ -106,7 +107,47 @@ const next = async (game: Game): Promise<Game> => {
         game.sockets.find(s => s.id === latestEvent.askerId)!
       );
 
+      // if target is ai
+
+      console.log('about to send to ai...');
+
       const state = updateState(game.state, 'waitForAnswer', question);
+      // get completion from AI and use in `emitStateAndWait` to submit anser
+
+      console.log('About to test for question to AI ... ');
+      const baseUrl = 'https://hack23-ai-ac11aa57a2eb.herokuapp.com/';
+      const playerList = { player_list: ['Miller', 'Royce', 'Alex', 'Nick'] };
+      const newSessionSuffix = '/new-session/ai-amount/1';
+
+      // 1. start session, obtain session id
+      const newSessionUrl = baseUrl + newSessionSuffix; // POST
+      const sessionBody = playerList;
+      const sessionResponse = await axios.post(newSessionUrl, sessionBody);
+      console.log('session response data:', sessionResponse.data);
+
+      // example session start log
+      // response from ai {
+      //   ai_players: [ 'billy' ],
+      //   session_id: '79f89a3b-66b3-47d7-96c4-63352193cca0'
+      // }
+
+      const sessionID = sessionResponse.data.session_id;
+      const aiName = sessionResponse.data.ai_players[0]; // use first result for testing
+
+      // 2. assemble question url
+      const questionUrl = baseUrl + '/ai/' + aiName + '/session/' + sessionID;
+
+      // 3. send question
+      const questionResponse: {
+        data: string[];
+      } = await axios.post(questionUrl, question.data.contents);
+
+      // 4. return response to front end
+      console.log('question response', questionResponse.data);
+
+      const AI_TEXT_RESPONSE = questionResponse.data.at(0);
+      // TODO: @alex do something with AI_TEXT_RESPONSE, it is the legit AI response;
+
       return next(await emitStateAndWait({ ...game, state }));
     }
     case 'waitForAnswer': {
