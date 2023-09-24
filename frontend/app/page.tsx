@@ -8,6 +8,7 @@ import styles from "./page.module.scss";
 import { GameState } from "./types";
 import PlayerTray from "./components/PlayerTray";
 import Title from "./components/Title";
+import Background from "./components/Background";
 
 function Intro({ context }: { context: GameContextType }) {
   const player = context.state?.players.find((p) => p.id === context.playerId);
@@ -94,6 +95,7 @@ export default function Home() {
   if (!gameContext.live) {
     return (
       <main className={styles.main}>
+        <Background />
         {renderConnectionHeader()}
         <Welcome />
       </main>
@@ -108,6 +110,7 @@ export default function Home() {
   } else {
     return (
       <main className={styles.main}>
+        <Background />
         {renderConnectionHeader()}
         <Game />
       </main>
