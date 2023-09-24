@@ -8,6 +8,8 @@ if (!url) {
 }
 
 export const socket: Socket<
-  { message: (e: GameEvent["type"]) => void },
+  { message: (e: GameEvent) => void },
   { message: (msg: GameMessage) => void }
-> = io(url);
+> = io(url, {
+  autoConnect: false,
+});
