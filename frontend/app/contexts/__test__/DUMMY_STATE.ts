@@ -10,16 +10,39 @@ export default {
         type: "chat",
         messages: [
           {
-            contents: "yo yo yo what is up kids",
-            from: "test2",
-            id: "testChat1",
-            sentAt: 123675100023,
-            to: "test1",
+            contents: "Are yo ua stupid idiot bro",
+            from: "test1",
+            id: "testChat2",
+            sentAt: 123675300023,
+            to: "test2",
             type: "question",
           },
         ],
       },
-      previousPhases: [],
+      previousPhases: [
+        {
+          type: "chat",
+          messages: [
+            {
+              contents: "yo yo yo what is up kids",
+              from: "test2",
+              id: "testChat1",
+              sentAt: 123675100023,
+              to: "test1",
+              type: "question",
+            },
+            {
+              contents:
+                "nothing much man. This has been a really tough day for me with all the stupid coding im doing",
+              from: "test1",
+              id: "testChat2",
+              sentAt: 123675300023,
+              to: "test2",
+              type: "answer",
+            },
+          ],
+        },
+      ],
       status: "ongoing",
     },
     {
@@ -33,7 +56,8 @@ export default {
           type: "chat",
           messages: [
             {
-              contents: "are you stupid?",
+              contents:
+                "are you stupid? like seriously are you seriously that dumb that you cant build this frontend",
               from: "test3",
               id: "testChat4",
               sentAt: 123675100023,

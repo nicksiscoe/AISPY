@@ -31,7 +31,7 @@ const DEFAULT: GameContextType = {
 };
 
 // TODO: Use `DEFAULT` game state
-const INITIAL = TEST;
+const INITIAL = DEFAULT;
 
 export const GameContext = createContext<GameContextType>(INITIAL);
 
@@ -52,12 +52,13 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!socket) return;
+    socket.connect();
 
     const onConnect = () => {
       setConnected(true);
     };
-    const onConnectError = (msg: string) => {
-      console.error(msg);
+    const onConnectError = (error: Error) => {
+      console.error(JSON.stringify(error));
     };
     const onDisconnect = () => {
       setConnected(false);
@@ -90,13 +91,13 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
 
     return () => {
       if (!socket) return;
-
       socket.off("connect", onConnect);
       socket.off("connect_error", onConnectError);
       socket.off("disconnect", onDisconnect);
       socket.off("joining", onJoining);
       socket.off("begin", onBegin);
       socket.off("stateChange", onStateChange);
+      socket.close();
     };
   }, []);
 

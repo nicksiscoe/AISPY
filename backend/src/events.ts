@@ -1,9 +1,15 @@
-import { GameState, Message, Player } from './state';
+import { GameState, Round, RoundPhase, UserMessage } from './state';
 
 /**
  * The singular game event type; encompasses all events
  */
-export type GameEvent = Begin | Crash | Joining | NewMessage | StateChange;
+export type GameEvent =
+  | Begin
+  | BeginRound
+  | Crash
+  | Joining
+  | NewMessage
+  | StateChange;
 
 /**
  * The type to provide socket.io for events
@@ -38,7 +44,9 @@ export type Joining = E<
 export type Begin = E<'begin', GameState>;
 
 /** A question or answer is submitted */
-export type NewMessage = E<'message', Message>;
+export type NewMessage = E<'message', UserMessage>;
+
+export type BeginRound = E<'beginRound', Round>;
 
 type E<T extends string, D = {}> = {
   data: D;

@@ -51,6 +51,12 @@
   justify-content: center;
   align-items: stretch;
   overflow: hidden;
+
+  .trayWrapper {
+    z-index: 2;
+    padding-bottom: 0.5em;
+    box-shadow: 0 2px 8px 10px rgba(0, 0, 0, 0.6);
+  }
 }
 
 .intro {

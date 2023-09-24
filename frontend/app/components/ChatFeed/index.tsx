@@ -4,6 +4,7 @@ import styles from "./index.module.scss";
 import { useGameContext } from "@/app/contexts/GameContext";
 import PlayerTray from "../PlayerTray";
 import CountdownTimer from "../CountdownTimer";
+import PlayerPic from "../PlayerPic";
 
 function RoundPhase({
   phase,
@@ -18,6 +19,12 @@ function RoundPhase({
     case "chat": {
       return (
         <>
+          {ongoing && (
+            <div className={styles.interrogation}>
+              {/* // TODO: This should tell you who is asking/answering rn */}
+              <p>Interrogation...</p>
+            </div>
+          )}
           {[...phase.messages].reverse().map((message) => {
             const player = state?.players.find((p) => p.id === message.from);
             const fromMe = message.from === playerId;
@@ -26,14 +33,13 @@ function RoundPhase({
             return (
               <div
                 key={`${phase.type}-m-${message.id}`}
-                className={styles.message}
+                className={`${styles.message} ${fromMe ? styles.mine : ""}`}
               >
                 <div className={styles.author}>
+                  <PlayerPic player={player} size={20} showBadge={false} />
                   <p>{player.name}</p>
                 </div>
-                <div
-                  className={`${styles.bubble} ${fromMe ? styles.mine : ""}`}
-                >
+                <div className={styles.bubble}>
                   <p>{message.contents}</p>
                 </div>
               </div>
@@ -56,7 +62,7 @@ function RoundPhase({
         if (!!eliminatedPlayer) {
           return (
             <div className={`${styles.voting} ${styles.eliminated}`}>
-              <p>Eliminated {eliminatedPlayer.name}.</p>
+              <p>The group eliminated {eliminatedPlayer.name}.</p>
             </div>
           );
         } else {
@@ -109,7 +115,7 @@ function UserAction({ type }: { type: UserActionType }) {
       return (
         <div>
           <p>Select a player to interrogate...</p>
-          <PlayerTray />
+          <PlayerTray showBadges={false} />
           <div className={styles.text}>
             <textarea
               placeholder={"Ask a question..."}
@@ -159,6 +165,7 @@ function UserAction({ type }: { type: UserActionType }) {
         <div>
           <p>Vote for a player to eliminate...</p>
           <PlayerTray
+            showBadges={false}
             onSelect={(player) => {
               console.log("poop", player);
             }}
@@ -244,7 +251,9 @@ function ChatFeed(props: Props) {
                   );
                 })}
                 <div className={styles.roundWrapper}>
-                  <p>~ Round {round.id + 1} ~</p>
+                  <hr />
+                  <p>Round {round.id + 1}</p>
+                  <hr />
                 </div>
               </>
             );
@@ -259,7 +268,7 @@ function ChatFeed(props: Props) {
       )}
       <div className={styles.actionWrapper}>
         {!userActionType ? (
-          <p>Nothing to do</p>
+          <p className={styles.noneRequired}>Waiting on other players...</p>
         ) : (
           <UserAction type={userActionType} />
         )}

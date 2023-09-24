@@ -30,7 +30,7 @@ const PlayerModal: React.FC<PlayerModalProps> = ({
           left: "50%",
           transform: "translate(-50%, -50%)",
           width: "50%",
-          backgroundColor: "white",
+          backgroundColor: "black",
           boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
           padding: 12,
           display: "flex",
