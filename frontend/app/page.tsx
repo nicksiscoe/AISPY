@@ -9,12 +9,12 @@ import { GameState } from "./types";
 import PlayerTray from "./components/PlayerTray";
 import Title from "./components/Title";
 import Background from "./components/Background";
-import EliminatedModal from "./components/EliminatedModal";
+import OutcomeModal from "./components/OutcomeModal";
 import ConnectionHeader from "./components/ConnectionHeader";
 
 function Intro() {
   const context = useGameContext();
-  const player = context.state?.players.find(p => p.id === context.playerId);
+  const player = context.state?.players.find((p) => p.id === context.playerId);
 
   if (!player) return null; // wtf?
 
@@ -28,12 +28,27 @@ function Intro() {
 
 function Game() {
   const context = useGameContext();
-  const player = context.state?.players.find(p => p.id === context.playerId);
+  const player = context.state?.players.find((p) => p.id === context.playerId);
 
-  const [showPlayerEliminated, setShowPlayerEliminated] = useState(false);
+  const [outcome, setOutcome] = useState<string>();
   useEffect(() => {
-    if (player?.status === "eliminated") {
-      setShowPlayerEliminated(true);
+    if (context.state?.latestEvent.type === "gameOver") {
+      switch (context.state.latestEvent.outcome) {
+        case "aiWins": {
+          setOutcome("The AI has won. Try again next time.");
+          break;
+        }
+        case "humansWin": {
+          if (player?.status !== "eliminated") {
+            setOutcome("The AI was eliminated. You win!");
+          } else {
+            setOutcome("The AI was eliminated, but you were too.");
+          }
+          break;
+        }
+      }
+    } else if (player?.status === "eliminated") {
+      setOutcome("You have been eliminated.");
     }
   }, [player?.status]);
 
@@ -44,9 +59,10 @@ function Game() {
         <PlayerTray />
       </div>
       {context.state && context.me && <ChatFeed state={context.state} />}
-      <EliminatedModal
-        isOpen={showPlayerEliminated}
-        onClose={() => setShowPlayerEliminated(false)}
+      <OutcomeModal
+        outcome={outcome}
+        isOpen={!!outcome}
+        onClose={() => setOutcome(undefined)}
       />
     </div>
   );

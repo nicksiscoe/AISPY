@@ -5,12 +5,14 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import styles from "../../styles/index.module.scss";
 
-interface EliminatedModalProps {
+interface OutcomeModalModalProps {
+  outcome?: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
-const EliminatedModal: React.FC<EliminatedModalProps> = ({
+const OutcomeModal: React.FC<OutcomeModalModalProps> = ({
+  outcome,
   isOpen,
   onClose,
 }) => {
@@ -24,24 +26,24 @@ const EliminatedModal: React.FC<EliminatedModalProps> = ({
       <div className={styles.modalStyle}>
         <div className={styles.modalTitle}>
           <Typography variant="h6" id="modal-title">
-            ggwp
+            🚨
           </Typography>
           <IconButton
             edge="end"
             color="inherit"
             onClick={onClose}
             aria-label="close"
-            style={{marginTop: "-0.17em"}}
+            style={{ marginTop: "-0.17em" }}
           >
             <CloseIcon />
           </IconButton>
         </div>
         <Typography variant="body2" id="modal-description">
-          You have been voted out of the tribal council.
+          {outcome}
         </Typography>
       </div>
     </Modal>
   );
 };
 
-export default EliminatedModal;
+export default OutcomeModal;
