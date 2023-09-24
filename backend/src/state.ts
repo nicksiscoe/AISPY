@@ -1,5 +1,16 @@
+export type StateEvent = BeginGame | NewMessage | BeginRound;
+
+/** All players have joined and the game is beginning */
+export type BeginGame = SE<'beginGame'>;
+
+/** A question or answer is submitted */
+export type NewMessage = SE<'message', UserMessage>;
+
+export type BeginRound = SE<'beginRound', Round>;
+
 export interface GameState {
   id: string;
+  latestEvent: StateEvent;
   players: Player[];
   rounds: Round[];
 }
@@ -46,3 +57,10 @@ export interface UserMessage {
   to: string;
   type: 'answer' | 'question';
 }
+
+type SE<T extends string, D = {}> = D & {
+  /** How long this event/step last, in milliseconds */
+  duration: number;
+  ends: string;
+  type: T;
+};

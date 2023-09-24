@@ -1,6 +1,7 @@
 import { GameEvent } from './events';
+import { StateEvent } from './state';
 
-export const wait = (s: number) => new Promise(ok => setTimeout(ok, 1000 * s));
+export const wait = (ms: number) => new Promise(ok => setTimeout(ok, ms));
 
 /** Pick an item at random from an array  */
 export const pickOne = <T>(things: T[]): [selected: T, remaining: T[]] => {
@@ -25,31 +26,32 @@ export const pickN = <T>(
 };
 
 /** Get the `Date`, `s` seconds from now */
-const secondsFromNow = (s: number) => {
+const msFromNow = (ms: number) => {
   const d = new Date();
-  d.setTime(Date.now() + 1000 * s);
+  d.setTime(Date.now() + ms);
   return d;
 };
 
-export const createEvent = <
-  T extends GameEvent['type'],
-  E extends Extract<GameEvent, { type: T }>,
+export const createStateEvent = <
+  T extends StateEvent['type'],
+  E extends Extract<StateEvent, { type: T }>,
 >(
   type: T,
-  secsToEnd: number,
-  data: E['data']
+  duration: number,
+  data: Omit<E, keyof StateEvent>
 ): E =>
   ({
     id: `${Date.now()}`,
-    data,
-    ends: secondsFromNow(secsToEnd).toUTCString(),
+    duration,
+    ends: msFromNow(duration).toUTCString(),
     type,
-  }) as E;
+    ...data,
+  }) as unknown as E;
 
-export const createUntimedEvent = <
+export const createGameEvent = <
   T extends GameEvent['type'],
   E extends Extract<GameEvent, { type: T }>,
 >(
   type: T,
   data: E['data']
-): E => ({ id: `${Date.now()}`, data, ends: null, type }) as E;
+): E => ({ id: `${Date.now()}`, data, type }) as E;

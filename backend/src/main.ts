@@ -5,7 +5,7 @@ import { ServerToClientEvents } from './events';
 import { GameSocket, startGame } from './game';
 import { ClientToServerEvents } from './messages';
 import * as params from './params';
-import { createUntimedEvent } from './utils';
+import { createGameEvent } from './utils';
 
 const app = express();
 const httpServer = createServer(app);
@@ -33,9 +33,7 @@ io.on('connection', socket =>
 
       const gameId = `game-${gameIdIndex}`;
       await socket.join(gameId);
-      socket.send(
-        createUntimedEvent('joining', { gameId, playerId: socket.id })
-      );
+      socket.send(createGameEvent('joining', { gameId, playerId: socket.id }));
 
       waitingSockets.push(socket);
 
