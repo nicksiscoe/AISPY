@@ -84,7 +84,7 @@ function UserAction({ type }: { type: UserActionType }) {
     actions: { question, answer, vote },
   } = useGameContext();
 
-  const [selectedVote, setSelectedVote] = useState<Player>();
+  const [selectedPlayer, setSelectedPlayer] = useState<Player>();
   const [text, setText] = useState("");
   const [didSubmit, setDidSubmit] = useState(false);
 
@@ -112,11 +112,14 @@ function UserAction({ type }: { type: UserActionType }) {
 
     switch (type) {
       case UserActionType.ASK: {
+        if (!selectedPlayer) return;
+
         question({
           contents: text,
-          askeeId: "", // TODO: How do we know who to ask?
+          askeeId: selectedPlayer.id,
         });
         setDidSubmit(true);
+        setSelectedPlayer(undefined);
         setText("");
         break;
       }
@@ -136,14 +139,14 @@ function UserAction({ type }: { type: UserActionType }) {
   };
 
   const attemptSubmitVote = () => {
-    if (!selectedVote) return;
+    if (!selectedPlayer) return;
 
     switch (type) {
       case UserActionType.VOTE: {
         vote({
           /* TODO */
         });
-        setSelectedVote(undefined);
+        setSelectedPlayer(undefined);
         break;
       }
       default: {
@@ -152,8 +155,8 @@ function UserAction({ type }: { type: UserActionType }) {
     }
   };
   useEffect(() => {
-    if (selectedVote && type === UserActionType.VOTE) attemptSubmitVote();
-  }, [selectedVote]);
+    if (selectedPlayer && type === UserActionType.VOTE) attemptSubmitVote();
+  }, [selectedPlayer]);
 
   switch (type) {
     case UserActionType.ASK: {
@@ -161,7 +164,18 @@ function UserAction({ type }: { type: UserActionType }) {
       return (
         <div>
           <p>Select a player to interrogate...</p>
-          <PlayerTray showBadges={false} />
+          <PlayerTray
+            showBadges={false}
+            onSelect={
+              !didSubmit
+                ? (player) => {
+                    if (selectedPlayer?.id !== player.id) {
+                      setSelectedPlayer(player);
+                    }
+                  }
+                : undefined
+            }
+          />
           <div className={styles.text}>
             <textarea
               placeholder={"Ask a question..."}
@@ -217,8 +231,8 @@ function UserAction({ type }: { type: UserActionType }) {
             onSelect={
               !didSubmit
                 ? (player) => {
-                    if (selectedVote?.id !== player.id) {
-                      setSelectedVote(player);
+                    if (selectedPlayer?.id !== player.id) {
+                      setSelectedPlayer(player);
                     }
                   }
                 : undefined
