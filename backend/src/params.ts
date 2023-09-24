@@ -1,1 +1,1 @@
-export const HUMAN_PLAYER_COUNT = 4;
+export const HUMAN_PLAYER_COUNT = 1;
