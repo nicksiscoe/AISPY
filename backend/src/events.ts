@@ -6,6 +6,13 @@ import { GameState, Message, Player } from './state';
 export type GameEvent = Begin | Crash | Joining | NewMessage | StateChange;
 
 /**
+ * The type to provide socket.io for events
+ */
+export type ServerToClientEvents = {
+  message: (e: GameEvent, ack?: (e: number) => void) => void;
+};
+
+/**
  * Something has gone horribly wrong and the game is over
  */
 export type Crash = E<'crash'>;

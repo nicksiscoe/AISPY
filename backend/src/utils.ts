@@ -1,13 +1,13 @@
 import { GameEvent } from './events';
 
-/** Pick a random value from an array of values */
-export const pickOne = <T>(things: T[]): T => {
+/** Pick an item at random from an array  */
+export const pickOne = <T>(things: T[]): [selected: T, remaining: T[]] => {
   if (things.length < 1) {
     throw new Error(`Cannot pick an element from an empty array.`);
   }
 
   const index = Math.floor(Math.random() * things.length);
-  return things[index];
+  return [things[index], [...things].splice(index, 1)];
 };
 
 /** Get the `Date`, `s` seconds from now */
