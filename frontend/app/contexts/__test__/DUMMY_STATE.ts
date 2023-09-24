@@ -7,7 +7,17 @@ export default {
     {
       id: 1,
       currentPhase: {
-        type: "vote",
+        type: "chat",
+        messages: [
+          {
+            contents: "Are yo ua stupid idiot bro",
+            from: "test1",
+            id: "testChat2",
+            sentAt: 123675300023,
+            to: "test2",
+            type: "question",
+          },
+        ],
       },
       previousPhases: [
         {
@@ -22,12 +32,13 @@ export default {
               type: "question",
             },
             {
-              contents: "nothing much man",
+              contents:
+                "nothing much man. This has been a really tough day for me with all the stupid coding im doing",
               from: "test1",
               id: "testChat2",
               sentAt: 123675300023,
               to: "test2",
-              type: "question",
+              type: "answer",
             },
           ],
         },
@@ -45,7 +56,8 @@ export default {
           type: "chat",
           messages: [
             {
-              contents: "are you stupid?",
+              contents:
+                "are you stupid? like seriously are you seriously that dumb that you cant build this frontend",
               from: "test3",
               id: "testChat4",
               sentAt: 123675100023,

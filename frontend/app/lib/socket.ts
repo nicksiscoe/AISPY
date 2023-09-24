@@ -8,6 +8,6 @@ if (!url) {
 }
 
 export const socket: Socket<
-  { message: (e: GameEvent) => void },
+  { message: (e: GameEvent["type"]) => void },
   { message: (msg: GameMessage) => void }
 > = io(url);

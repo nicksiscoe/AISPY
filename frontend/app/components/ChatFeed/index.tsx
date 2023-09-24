@@ -19,6 +19,12 @@ function RoundPhase({
     case "chat": {
       return (
         <>
+          {ongoing && (
+            <div className={styles.interrogation}>
+              {/* // TODO: This should tell you who is asking/answering rn */}
+              <p>Interrogation...</p>
+            </div>
+          )}
           {[...phase.messages].reverse().map((message) => {
             const player = state?.players.find((p) => p.id === message.from);
             const fromMe = message.from === playerId;
@@ -27,15 +33,13 @@ function RoundPhase({
             return (
               <div
                 key={`${phase.type}-m-${message.id}`}
-                className={styles.message}
+                className={`${styles.message} ${fromMe ? styles.mine : ""}`}
               >
                 <div className={styles.author}>
                   <PlayerPic player={player} size={20} showBadge={false} />
                   <p>{player.name}</p>
                 </div>
-                <div
-                  className={`${styles.bubble} ${fromMe ? styles.mine : ""}`}
-                >
+                <div className={styles.bubble}>
                   <p>{message.contents}</p>
                 </div>
               </div>
@@ -58,7 +62,7 @@ function RoundPhase({
         if (!!eliminatedPlayer) {
           return (
             <div className={`${styles.voting} ${styles.eliminated}`}>
-              <p>Eliminated {eliminatedPlayer.name}.</p>
+              <p>The group eliminated {eliminatedPlayer.name}.</p>
             </div>
           );
         } else {
@@ -247,7 +251,9 @@ function ChatFeed(props: Props) {
                   );
                 })}
                 <div className={styles.roundWrapper}>
-                  <p>~ Round {round.id + 1} ~</p>
+                  <hr />
+                  <p>Round {round.id + 1}</p>
+                  <hr />
                 </div>
               </>
             );
@@ -262,7 +268,7 @@ function ChatFeed(props: Props) {
       )}
       <div className={styles.actionWrapper}>
         {!userActionType ? (
-          <p>Nothing to do</p>
+          <p className={styles.noneRequired}>Waiting on other players...</p>
         ) : (
           <UserAction type={userActionType} />
         )}

@@ -56,8 +56,8 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
     const onConnect = () => {
       setConnected(true);
     };
-    const onConnectError = (msg: string) => {
-      console.error(msg);
+    const onConnectError = (error: Error) => {
+      console.error(JSON.stringify(error));
     };
     const onDisconnect = () => {
       setConnected(false);

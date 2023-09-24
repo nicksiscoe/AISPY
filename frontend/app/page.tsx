@@ -25,8 +25,10 @@ function Intro({ context }: { context: GameContextType }) {
 function Game() {
   return (
     <div className={styles.game}>
-      <Title/>
-      <PlayerTray />
+      <Title />
+      <div className={styles.trayWrapper}>
+        <PlayerTray />
+      </div>
       <ChatFeed />
     </div>
   );
@@ -107,7 +109,7 @@ export default function Home() {
     return (
       <main className={styles.main}>
         {renderConnectionHeader()}
-        <Game/>
+        <Game />
       </main>
     );
   }

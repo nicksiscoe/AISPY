@@ -50,6 +50,12 @@
         }
       }
       &.message {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        padding-left: 0.5em;
+        padding-right: 5em;
         .author {
           display: flex;
           flex-direction: row;
@@ -60,9 +66,34 @@
             opacity: 0.5;
           }
         }
+        &.mine {
+          padding-left: 5em;
+          padding-right: 0.5em;
+          align-items: flex-end;
+          .author {
+            flex-direction: row-reverse;
+          }
+          .bubble {
+            background: linear-gradient(180deg, rgb(0, 184, 246), blue);
+          }
+        }
+      }
+      &.roundWrapper {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        p {
+          padding: 0 0.5em;
+        }
+        hr {
+          width: 20%;
+        }
       }
       &.roundWrapper,
-      &.voting {
+      &.voting,
+      &.interrogation {
+        padding: 0.5em;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -73,18 +104,23 @@
           font-weight: 900;
         }
       }
-      &.voting.eliminated {
-        opacity: 0.5;
-        color: red;
+      &.voting,
+      &.interrogation {
+        p {
+          font-size: 0.8rem;
+        }
+
+        &.eliminated {
+          opacity: 0.5;
+          color: red;
+        }
       }
 
       .bubble {
-        background-color: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.1);
         padding: 0.5em 1em;
         border-radius: 12px;
-        &.mine {
-          background-color: blue;
-        }
+        width: auto;
 
         p {
           font-size: 0.9rem;
@@ -116,6 +152,9 @@
   p {
     font-size: 0.9rem;
     padding: 0.5em;
+    &.noneRequired {
+      opacity: 0.3;
+    }
   }
 
   textarea {
