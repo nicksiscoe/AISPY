@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { styled } from '@mui/material/styles';
-import Badge from '@mui/material/Badge';
-import Avatar from '@mui/material/Avatar';
-import Stack from '@mui/material/Stack';
-import PlayerModal from '../PlayerModal'; // Import PlayerModal
-import { useGameContext } from '@/app/contexts/GameContext';
+import React, { useState } from "react";
+import { styled } from "@mui/material/styles";
+import Badge from "@mui/material/Badge";
+import Avatar from "@mui/material/Avatar";
+import Stack from "@mui/material/Stack";
+import PlayerModal from "../PlayerModal"; // Import PlayerModal
+import { useGameContext } from "@/app/contexts/GameContext";
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
-  '& .MuiBadge-badge': {
-    backgroundColor: '#1875d1',
+  "& .MuiBadge-badge": {
+    backgroundColor: "#1875d1",
     boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
   },
 }));
@@ -16,12 +16,12 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
 export default function CurrentPlayer() {
   const context = useGameContext();
   const player = context.state?.players.find((p) => p.id === context.playerId);
-  const splitName = player?.name.split(' ');
+  const splitName = player?.name.split(" ");
   let initials = null;
   if (splitName) {
     initials = splitName!
       .map((part: string) => part.charAt(0).toUpperCase())
-      .join('');
+      .join("");
   }
 
   // State to manage the modal
@@ -37,11 +37,13 @@ export default function CurrentPlayer() {
     setModalOpen(false);
   };
 
+  if (!player) return null;
+
   return (
     <Stack direction="row" spacing={2}>
       <StyledBadge
         overlap="circular"
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         variant="dot"
       >
         {/* Add a clickable element to open the modal */}
