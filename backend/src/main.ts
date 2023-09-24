@@ -1,10 +1,11 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import { ServerToClientEvents } from './events';
+import { GameSocket, createGame } from './game';
+import { ClientToServerEvents } from './messages';
 import * as params from './params';
-import { GameEvent, ServerToClientEvents } from './events';
-import { ClientToServerEvents, GameMessage } from './messages';
-import { createUntimedEvent } from './utils';
+import { createEvent, createUntimedEvent } from './utils';
 
 const app = express();
 const httpServer = createServer(app);
@@ -13,6 +14,7 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
 });
 
 let gameIdIndex = 0;
+const waitingSockets: GameSocket[] = [];
 
 io.on('connection', socket =>
   socket
@@ -25,17 +27,25 @@ io.on('connection', socket =>
     )
     .on('message', async msg => {
       if (msg.type !== 'join') return;
-      console.log('client sent a join message!', msg);
+      console.log(
+        `client sent a join message! there are ${waitingSockets.length} sockets waiting to begin`
+      );
 
       const gameId = `game-${gameIdIndex}`;
       await socket.join(gameId);
-      console.log('rooms: ', socket.rooms);
-
-      const sockets = await io.to(gameId).fetchSockets();
-
       socket.send(
         createUntimedEvent('joining', { gameId, playerId: socket.id })
       );
+
+      waitingSockets.push(socket);
+
+      // If we're at quorum, create the game
+      if (waitingSockets.length >= params.HUMAN_PLAYER_COUNT) {
+        gameIdIndex++;
+        const game = createGame(gameId, waitingSockets);
+        io.to(gameId).emit('message', createEvent('begin', 10, game.state));
+        waitingSockets.splice(0, waitingSockets.length);
+      }
     })
 );
 

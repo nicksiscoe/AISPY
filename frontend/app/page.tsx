@@ -22,10 +22,10 @@ function Intro({ context }: { context: GameContextType }) {
   );
 }
 
-function Game({ state }: { state: GameState }) {
+function Game() {
   return (
     <div className={styles.game}>
-      <Title />
+      <Title/>
       <PlayerTray />
       <ChatFeed />
     </div>
@@ -107,7 +107,7 @@ export default function Home() {
     return (
       <main className={styles.main}>
         {renderConnectionHeader()}
-        <Game state={gameContext.state!} />
+        <Game/>
       </main>
     );
   }
