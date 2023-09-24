@@ -7,7 +7,7 @@ export default function Title() {
         A.I. SPY
       </div>
       <div className={styles.subheading}>
-        Elminate the AI.
+        Eliminate the AI.
       </div>
     </div>
   )
