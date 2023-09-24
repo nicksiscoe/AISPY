@@ -251,12 +251,15 @@ function ChatFeed(props: Props) {
         // If I was just asked a question...
         if (state.pendingAnswererId === playerId) {
           setUserActionType(UserActionType.ANSWER);
+          break;
         }
         // If I need to ask someone a question...
         if (state.pendingAskerId === playerId) {
           setUserActionType(UserActionType.ASK);
+          break;
         }
 
+        setUserActionType(undefined);
         break;
       }
       case "vote": {
@@ -265,6 +268,8 @@ function ChatFeed(props: Props) {
       }
     }
   }, [state]);
+
+  console.log(state, userActionType);
 
   const player = useMemo(() => {
     return state?.players.find((p) => p.id === playerId);

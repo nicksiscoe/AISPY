@@ -5,9 +5,9 @@ export * from "../../../backend/src/messages";
 export * from "../../../backend/src/state";
 
 export enum UserActionType {
-  ASK,
-  ANSWER,
-  VOTE,
+  ASK = "ask",
+  ANSWER = "answer",
+  VOTE = "vote",
 }
 
 export interface ClientGameState extends GameState {

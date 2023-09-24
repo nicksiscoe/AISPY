@@ -72,7 +72,7 @@ function CountdownTimer({ start, end }: Props) {
   const progress = useMemo(() => {
     if (typeof msRemaining === "undefined") return 0;
     const initialMsRemaining = end.getTime() - start.getTime();
-    if (initialMsRemaining < 0) return 100;
+    if (initialMsRemaining <= 0) return 100;
     return (1 - msRemaining / initialMsRemaining) * 100;
   }, [start, end, msRemaining]);
 

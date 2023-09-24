@@ -105,12 +105,13 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
             case "waitForAnswer": {
               setState((prevState) => ({
                 ...prevState!,
-                pendingAskerId: stateEvent.askerId,
+                pendingAskerId: undefined,
                 pendingAnswererId: stateEvent.answererId,
               }));
               break;
             }
           }
+          break;
         }
         case "crash": {
           console.error("Game state machine crashed");
