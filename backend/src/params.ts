@@ -1,4 +1,4 @@
-export const HUMAN_PLAYER_COUNT = 1;
+export const HUMAN_PLAYER_COUNT = 4;
 
 const DONT_WAIT = false;
 

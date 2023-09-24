@@ -63,6 +63,8 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
             case "waitForAnswer":
             case "waitForVotes": {
               setState(event.data);
+              setPrevChance(nextChange);
+              setNextChange(new Date(stateEvent.ends));
               return;
             }
           }
