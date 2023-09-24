@@ -78,6 +78,38 @@ const waitForMessageFrom = async <
   });
 };
 
+type VoteResults = {
+  results: { [voterId: string]: string };
+};
+
+const collectVotes = async (
+  game: Game
+): Promise<VoteResults & GameMessageMetadata> => {
+  const votes: VoteResults['results'] = {};
+  return new Promise<VoteResults & GameMessageMetadata>(ok => {
+    game.sockets.forEach(socket => {
+      socket.on('message', msg => {
+        console.log(`Got a vote from ${socket.id}`);
+        if (msg.type === 'vote') {
+          votes[socket.id] = msg.data.playerId;
+        }
+      });
+    });
+
+    setTimeout(
+      () =>
+        ok({
+          // ...(msg as M),
+          results: votes,
+          id: Date.now(),
+          senderId: '',
+          sentAt: new Date().toUTCString(),
+        }),
+      params.WAIT_FOR_VOTES_DURATION
+    );
+  });
+};
+
 const getAnswerFromAi = async (
   game: Game,
   questionContents: string,
@@ -178,7 +210,9 @@ const next = async (game: Game): Promise<Game> => {
       return next(await emitStateAndWait({ ...game, state }));
     }
     case 'waitForVotes': {
-      return game;
+      const votes = await collectVotes(game);
+      const state = updateState(game.state, 'handleVoteResults', votes);
+      return next(await emitStateAndWait({ ...game, state }));
     }
     default:
       return game;
@@ -202,6 +236,8 @@ function updateState<T extends StateEvent['type']>(
     ? Question & GameMessageMetadata
     : T extends 'nextQuestionOrVote'
     ? Answer & GameMessageMetadata
+    : T extends 'handleVoteResults'
+    ? VoteResults & GameMessageMetadata
     : null
 ): GameState {
   switch (nextEvent) {
@@ -219,8 +255,10 @@ function updateState<T extends StateEvent['type']>(
         rounds: [...state.rounds, { messages: [], phase: 'chat' }],
       };
 
+    case 'handleVoteResults': {
+      return state;
+    }
     case 'nextQuestionOrVote': {
-      const currentRound = state.rounds[0];
       const { ...answer } = maybeMessage! as Answer & GameMessageMetadata;
       const userMessage: UserMessage = {
         ...answer.data,
