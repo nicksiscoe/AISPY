@@ -1,26 +1,21 @@
-import { GameContext, GameContextType } from "@/app/contexts/GameContext";
-import styles from "./index.module.scss";
-import CurrentPlayer from "../CurrentPlayer";
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import { Button } from "@mui/material";
+import React, { useState } from 'react';
+import styles from './index.module.scss';
+import CurrentPlayer from '../CurrentPlayer';
+import HelpIconAndModal from '../HelpIconAndModal';
 
 export default function Title() {
-  return(
+  return (
     <div>
       <div className={styles.headerContainer}>
         <div className={styles.currentPlayer}>
-          <CurrentPlayer/>
+          <CurrentPlayer />
         </div>
-        <div className={styles.title}>
-          A.I. SPY
-        </div>
+        <div className={styles.title}>A.I. SPY</div>
         <div className={styles.help}>
-          <HelpOutlineIcon />
+          <HelpIconAndModal />
         </div>
       </div>
-      <div className={styles.subheading}>
-        Eliminate the AI.
-      </div>
+      <div className={styles.subheading}>Eliminate the AI.</div>
     </div>
-  )
+  );
 }
