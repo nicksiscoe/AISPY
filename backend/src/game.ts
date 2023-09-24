@@ -1,7 +1,12 @@
 import { BroadcastOperator, Socket } from 'socket.io';
 import * as params from './params';
 import { ServerToClientEvents } from './events';
-import { ClientToServerEvents, GameMessage, Question } from './messages';
+import {
+  Answer,
+  ClientToServerEvents,
+  GameMessage,
+  Question,
+} from './messages';
 import { PERSONAS } from './mocks';
 import { GameState, Round, StateEvent, UserMessage } from './state';
 import {
@@ -104,6 +109,15 @@ const run = async (game: Game): Promise<Game> => {
       const state = updateState(game.state, 'waitForAnswer', question);
       return run(await emitStateAndWait({ ...game, state }));
     }
+    case 'waitForAnswer': {
+      const answer = await waitForMessageFrom(
+        'answer',
+        game.sockets.find(s => s.id === latestEvent.answererId)!
+      );
+
+      const state = updateState(game.state, 'nextQuestionOrVote', answer);
+      return run(await emitStateAndWait({ ...game, state }));
+    }
     default:
       return game;
   }
@@ -122,8 +136,10 @@ export const startGame = async (
 function updateState<T extends StateEvent['type']>(
   state: GameState,
   nextEvent: T,
-  maybeMessage: 'waitForAnswer' extends T
+  maybeMessage: T extends 'waitForAnswer'
     ? Question & GameMessageMetadata
+    : T extends 'nextQuestionOrVote'
+    ? Answer & GameMessageMetadata
     : null
 ): GameState {
   switch (nextEvent) {
@@ -141,9 +157,12 @@ function updateState<T extends StateEvent['type']>(
         rounds: [...state.rounds, { messages: [], phase: 'chat' }],
       };
 
+    case 'nextQuestionOrVote': {
+      return state;
+    }
     case 'waitForAnswer': {
       const currentRound = state.rounds[0];
-      const { ...question } = maybeMessage!;
+      const { ...question } = maybeMessage! as Question & GameMessageMetadata;
       const userMessage: UserMessage = {
         ...question.data,
         askerId: question.senderId,

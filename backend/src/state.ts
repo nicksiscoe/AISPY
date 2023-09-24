@@ -2,6 +2,7 @@ export type StateEvent =
   | BeginGame
   | BeginRound
   | NewMessage
+  | NextQuestionOrVote
   | WaitForAnswer
   | WaitForQuestion;
 
@@ -13,6 +14,7 @@ export type BeginGame = SE<'beginGame'>;
 export type BeginRound = SE<'beginRound'>;
 export type WaitForQuestion = SE<'waitForQuestion', { askerId: string }>;
 export type WaitForAnswer = SE<'waitForAnswer', UserMessage>;
+export type NextQuestionOrVote = SE<'nextQuestionOrVote', UserMessage>;
 
 export interface GameState {
   id: string;
