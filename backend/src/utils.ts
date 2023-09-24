@@ -1,5 +1,7 @@
 import { GameEvent } from './events';
 
+export const wait = (s: number) => new Promise(ok => setTimeout(ok, 1000 * s));
+
 /** Pick an item at random from an array  */
 export const pickOne = <T>(things: T[]): [selected: T, remaining: T[]] => {
   if (things.length < 1)

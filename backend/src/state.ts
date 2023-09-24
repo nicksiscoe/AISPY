@@ -27,7 +27,7 @@ export type Round = {
 export type RoundPhase =
   | {
       type: 'chat';
-      messages: Message[];
+      messages: UserMessage[];
     }
   | {
       type: 'vote';
@@ -35,7 +35,7 @@ export type RoundPhase =
       eliminated?: string;
     };
 
-export interface Message {
+export interface UserMessage {
   contents: string;
   /** player ID */
   from: string;

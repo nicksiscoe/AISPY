@@ -1,14 +1,16 @@
-import { Socket } from 'socket.io';
+import { BroadcastOperator, Socket } from 'socket.io';
 import { GameState } from './state';
 import { ServerToClientEvents } from './events';
 import { ClientToServerEvents } from './messages';
-import { pickN } from './utils';
+import { createEvent, pickN, wait } from './utils';
 import { PERSONAS } from './mocks';
 
 export type GameSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
+type GameBroadcaster = BroadcastOperator<ServerToClientEvents, {}>;
 
 export interface Game {
   aiId: string;
+  broadcaster: GameBroadcaster;
   roomId: string;
   sockets: GameSocket[];
   state: GameState;
@@ -24,13 +26,34 @@ const createGameState = (gameId: string, playerIds: string[]): GameState => ({
   rounds: [],
 });
 // //
-export const createGame = (gameId: string, sockets: GameSocket[]): Game => {
+export const startGame = async (
+  gameId: string,
+  broadcaster: GameBroadcaster,
+  sockets: GameSocket[]
+) => {
   const aiId = 'ai';
+  const state = createGameState(gameId, [...sockets.map(s => s.id), aiId]);
 
-  return {
-    aiId: 'ai',
-    roomId: gameId,
-    sockets,
-    state: createGameState(gameId, [...sockets.map(s => s.id), aiId]),
-  };
+  broadcaster.emit('message', createEvent('begin', 10, state));
+  await wait(10);
+  broadcaster.emit(
+    'message',
+    createEvent('beginRound', 3, {
+      id: 0,
+      currentPhase: {
+        type: 'chat',
+        messages: [],
+      },
+      previousPhases: [],
+      status: 'ongoing',
+    })
+  );
+
+  // return {
+  //   aiId,
+  //   broadcaster,
+  //   roomId: gameId,
+  //   sockets,
+  //   state,
+  // };
 };
