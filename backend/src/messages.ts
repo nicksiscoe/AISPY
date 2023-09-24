@@ -22,7 +22,7 @@ export type Question = M<
   'question',
   {
     /** The ID of the player that the question is for */
-    askeeId: string;
+    answererId: string;
     contents: string;
   }
 >;

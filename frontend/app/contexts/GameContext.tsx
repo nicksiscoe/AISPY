@@ -42,7 +42,7 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
   const [playerId, setPlayerId] = useState<string | undefined>(
     INITIAL.playerId
   );
-  const [prevChange, setPrevChange] = useState<Date | undefined>(
+  const [prevChange, setPrevChance] = useState<Date | undefined>(
     INITIAL.prevChange
   );
   const [nextChange, setNextChange] = useState<Date | undefined>(
@@ -80,7 +80,7 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
             case "beginGame": {
               setState(event.data);
               if (stateEvent.ends) {
-                setPrevChange(new Date());
+                setPrevChance(new Date());
                 setNextChange(new Date(stateEvent.ends));
               }
               return;

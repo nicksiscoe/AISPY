@@ -14,10 +14,7 @@ export type BeginGame = SE<'beginGame'>;
 export type BeginRound = SE<'beginRound'>;
 
 export type WaitForQuestion = SE<'waitForQuestion', { askerId: string }>;
-export type WaitForAnswer = SE<
-  'waitForAnswer',
-  { answererId: string; askerId: string }
->;
+export type WaitForAnswer = SE<'waitForAnswer', UserMessage>;
 
 export interface GameState {
   id: string;
@@ -48,7 +45,9 @@ export type UserMessage = {
   answererId: string;
   askerId: string;
   contents: string;
+  messageId: number;
   messageType: 'answer' | 'question';
+  questionId: number;
   sentAt: string;
 };
 
