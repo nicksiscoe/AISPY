@@ -189,8 +189,8 @@ function UserAction({ type }: { type: UserActionType }) {
     }
     case UserActionType.VOTE: {
       return (
-        <div>
-          <p>Vote for a player to eliminate...</p>
+        <Fragment>
+          <p className={styles.label}>Vote for a player to eliminate</p>
           <PlayerTray
             showBadges={false}
             onSelect={
@@ -203,7 +203,7 @@ function UserAction({ type }: { type: UserActionType }) {
                 : undefined
             }
           />
-        </div>
+        </Fragment>
       );
     }
   }
@@ -297,12 +297,7 @@ function ChatFeed({ state }: Props) {
                       }`}
                     >
                       <div className={styles.author}>
-                        <PlayerPic
-                          player={player}
-                          size={20}
-                          showBadge={false}
-                        />
-                        <p>{player.name}</p>
+                        <p>{fromMe ? "Me" : player.name}</p>
                       </div>
                       <div className={styles.bubble}>
                         <p>{message.contents}</p>
