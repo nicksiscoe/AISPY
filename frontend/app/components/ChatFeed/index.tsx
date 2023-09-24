@@ -282,6 +282,10 @@ function ChatFeed(props: Props) {
     return state?.players.find(p => p.id === playerId);
   }, [state?.players, playerId]);
 
+  if(!!prevChange && !!nextChange) {
+    console.log('prev and a next', prevChange, nextChange);
+  }
+
   return (
     <>
       <div className={styles.feedWrapper}>
