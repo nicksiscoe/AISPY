@@ -19,7 +19,7 @@ const TEST: GameContextType = {
   connected: true,
   attemptJoin: () => {},
   live: true,
-  playerId: "test2",
+  playerId: "test1",
   state: DUMMY_STATE,
   prevChange: new Date(),
   nextChange: new Date(new Date().setMinutes(new Date().getMinutes() + 1)),
@@ -31,7 +31,7 @@ const DEFAULT: GameContextType = {
 };
 
 // TODO: Use `DEFAULT` game state
-const INITIAL = DEFAULT;
+const INITIAL = TEST;
 
 export const GameContext = createContext<GameContextType>(INITIAL);
 
