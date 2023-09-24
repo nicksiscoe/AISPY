@@ -169,7 +169,7 @@ const getAnswerFromAi = async (
     console.log('AI_TEXT_RESPONSE: ', AI_TEXT_RESPONSE);
     return {
       data: {
-        contents: questionResponse.data.join('') ?? 'FUCK',
+        contents: 'I love the Harry Potter series actually, its pretty cool',
         questionId,
       },
       id: Date.now(),

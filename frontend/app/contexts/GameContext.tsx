@@ -80,12 +80,12 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
     };
 
     socket.on("connect", onConnect);
-    socket.on("connect_error", err => console.error(err));
+    socket.on("connect_error", (err) => console.error(err));
     socket.on("disconnect", onDisconnect);
     socket.on("message", onMessage);
 
     // TODO: Remove this stupid auto-join and royce test API
-    socket.emit("message", { type: "join" });
+    // socket.emit("message", { type: "join" });
 
     return () => {
       socket.off("connect", onConnect);
@@ -100,19 +100,22 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
     socket.emit("message", { type: "join" });
   };
   const question = (data: Question["data"]) => {
+    console.log("submitting question", data);
     socket.emit("message", { type: "question", data });
   };
   const answer = (data: Answer["data"]) => {
+    console.log("submitting answer", data);
     socket.emit("message", { type: "answer", data });
   };
   const vote = (data: Vote["data"]) => {
+    console.log("submitting vote", data);
     socket.emit("message", { type: "vote", data });
   };
 
   const live = !!state;
 
   const playerMap = useMemo(
-    () => Object.fromEntries((state?.players ?? []).map(p => [p.id, p])),
+    () => Object.fromEntries((state?.players ?? []).map((p) => [p.id, p])),
     [state?.players]
   );
   return (
