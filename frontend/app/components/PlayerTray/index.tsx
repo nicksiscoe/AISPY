@@ -36,12 +36,6 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
   },
 }));
 
-const SmallAvatar = styled(Avatar)(({ theme }) => ({
-  width: 22,
-  height: 22,
-  border: `px solid ${theme.palette.background.paper}`,
-}));
-
 interface Props {
   onSelect?: (player: Player) => void;
   showBadges?: boolean;

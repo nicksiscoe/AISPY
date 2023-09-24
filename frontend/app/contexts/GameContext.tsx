@@ -106,6 +106,7 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
     socket.emit("message", { type: "answer", data });
   };
   const vote = (data: Vote["data"]) => {
+    console.log("emitting vote!", data);
     socket.emit("message", { type: "vote", data });
   };
 
@@ -115,6 +116,7 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
     () => Object.fromEntries((state?.players ?? []).map(p => [p.id, p])),
     [state?.players]
   );
+
   return (
     <Provider
       value={{

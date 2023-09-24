@@ -104,25 +104,14 @@ function UserAction({ type }: { type: UserActionType }) {
     }
   };
 
-  const attemptSubmitVote = () => {
-    if (!selectedPlayer) return;
-
-    switch (type) {
-      case UserActionType.VOTE: {
-        vote({
-          playerId: selectedPlayer.id,
-        });
-        setSelectedPlayer(undefined);
-        break;
-      }
-      default: {
-        break;
-      }
-    }
-  };
   useEffect(() => {
-    if (selectedPlayer && type === UserActionType.VOTE) attemptSubmitVote();
-  }, [selectedPlayer]);
+    if (selectedPlayer && type === UserActionType.VOTE) {
+      vote({
+        playerId: selectedPlayer.id,
+      });
+      setSelectedPlayer(undefined);
+    }
+  }, [selectedPlayer, type, vote]);
 
   switch (type) {
     case UserActionType.ASK: {
@@ -196,15 +185,10 @@ function UserAction({ type }: { type: UserActionType }) {
           <p className={styles.label}>Vote for a player to eliminate</p>
           <PlayerTray
             showBadges={false}
-            onSelect={
-              !didSubmit
-                ? player => {
-                    if (selectedPlayer?.id !== player.id) {
-                      setSelectedPlayer(player);
-                    }
-                  }
-                : undefined
-            }
+            onSelect={player => {
+              vote({ playerId: player.id });
+              setSelectedPlayer(undefined);
+            }}
           />
         </Fragment>
       );
