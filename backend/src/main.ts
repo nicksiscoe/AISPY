@@ -12,7 +12,7 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
   allowRequest: () => true,
-  cors: { allowedHeaders: ['*'], origin: '*' },
+  cors: { origin: '*' },
 });
 
 let gameIdIndex = 0;
