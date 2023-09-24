@@ -6,7 +6,7 @@ export type NewMessage = SE<'message', UserMessage>;
 /** All players have joined and the game is beginning */
 export type BeginGame = SE<'beginGame'>;
 
-export type BeginRound = SE<'beginRound', Round>;
+export type BeginRound = SE<'beginRound', { index: number }>;
 
 export interface GameState {
   id: string;
@@ -29,8 +29,8 @@ export interface Persona {
 }
 
 export type Round = {
-  id: number;
   currentPhase: RoundPhase;
+  index: number;
   previousPhases: RoundPhase[];
   status: 'ended' | 'ongoing';
 };
