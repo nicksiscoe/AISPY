@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Player, RoundPhase, UserActionType } from "@/app/types";
+import { Player, Round, UserActionType } from "@/app/types";
 import styles from "./index.module.scss";
 import { useGameContext } from "@/app/contexts/GameContext";
 import PlayerTray from "../PlayerTray";
@@ -10,12 +10,12 @@ function RoundPhase({
   phase,
   ongoing,
 }: {
-  phase: RoundPhase;
+  phase: Round["phase"];
   ongoing: boolean;
 }) {
   const { playerId, state } = useGameContext();
 
-  switch (phase.type) {
+  switch (phase) {
     case "chat": {
       return (
         <>
@@ -25,26 +25,6 @@ function RoundPhase({
               <p>Interrogation...</p>
             </div>
           )}
-          {[...phase.messages].reverse().map((message) => {
-            const player = state?.players.find((p) => p.id === message.from);
-            const fromMe = message.from === playerId;
-            if (!player) return null;
-
-            return (
-              <div
-                key={`${phase.type}-m-${message.id}`}
-                className={`${styles.message} ${fromMe ? styles.mine : ""}`}
-              >
-                <div className={styles.author}>
-                  <PlayerPic player={player} size={20} showBadge={false} />
-                  <p>{player.name}</p>
-                </div>
-                <div className={styles.bubble}>
-                  <p>{message.contents}</p>
-                </div>
-              </div>
-            );
-          })}
         </>
       );
     }
@@ -56,22 +36,23 @@ function RoundPhase({
           </div>
         );
       } else {
-        const eliminatedPlayer = state?.players.find(
-          (p) => p.id === phase.eliminated
+        let eliminatedPlayer = undefined;
+        // const eliminatedPlayer = state?.players.find(
+        //   (p) => p.id === phase.eliminated
+        // );
+        // if (!!eliminatedPlayer) {
+        //   return (
+        //     <div className={`${styles.voting} ${styles.eliminated}`}>
+        //       <p>The group eliminated {eliminatedPlayer.name}.</p>
+        //     </div>
+        //   );
+        // } else {
+        return (
+          <div className={`${styles.voting} ${styles.eliminated}`}>
+            <p>Successfully eliminated a player.</p>
+          </div>
         );
-        if (!!eliminatedPlayer) {
-          return (
-            <div className={`${styles.voting} ${styles.eliminated}`}>
-              <p>The group eliminated {eliminatedPlayer.name}.</p>
-            </div>
-          );
-        } else {
-          return (
-            <div className={`${styles.voting} ${styles.eliminated}`}>
-              <p>Voting complete.</p>
-            </div>
-          );
-        }
+        // }
       }
     }
   }
@@ -260,23 +241,21 @@ function ChatFeed(props: Props) {
     });
 
     if (!state?.rounds.length) return;
-    const ongoingRound = state.rounds.find((r) => r.status === "ongoing");
-    switch (ongoingRound?.currentPhase.type) {
+    const ongoingRound = state.rounds.at(0);
+    switch (ongoingRound?.phase) {
       case undefined: {
         console.error("No ongoing round. Unsure what to ask the user to do");
         break;
       }
       case "chat": {
-        const latestMessage = ongoingRound.currentPhase.messages.at(
-          ongoingRound.currentPhase.messages.length - 1
-        );
-
         // If I was just asked a question...
-        if (latestMessage?.to === playerId) {
+        if (state.pendingAnswererId === playerId) {
           setUserActionType(UserActionType.ANSWER);
         }
         // If I need to ask someone a question...
-        // TODO: ???
+        if (state.pendingAskerId === playerId) {
+          setUserActionType(UserActionType.ASK);
+        }
 
         break;
       }
@@ -296,28 +275,42 @@ function ChatFeed(props: Props) {
       <div className={styles.feedWrapper}>
         <div className={styles.feed}>
           <div id="feed-anchor" ref={scrollAnchorRef} />
-          {state?.rounds.map((round) => {
-            const roundOngoing = round.status === "ongoing";
+          {[...(state?.rounds || [])].reverse().map((round, index) => {
+            const roundOngoing = index === (state?.rounds.length || 0) - 1;
             return (
               <>
-                {round.currentPhase && (
-                  <RoundPhase
-                    phase={round.currentPhase}
-                    ongoing={roundOngoing}
-                  />
-                )}
-                {round.previousPhases.map((previousPhase) => {
+                <RoundPhase phase={round.phase} ongoing={roundOngoing} />
+                {[...round.messages].reverse().map((message) => {
+                  const player = state?.players.find(
+                    (p) => p.id === message.askerId
+                  );
+                  const fromMe = message.askerId === playerId;
+                  if (!player) return null;
+
                   return (
-                    <RoundPhase
-                      key={`${round.index}-phase-${previousPhase.type}`}
-                      phase={previousPhase}
-                      ongoing={false}
-                    />
+                    <div
+                      key={`${index}-m-${message.sentAt}`}
+                      className={`${styles.message} ${
+                        fromMe ? styles.mine : ""
+                      }`}
+                    >
+                      <div className={styles.author}>
+                        <PlayerPic
+                          player={player}
+                          size={20}
+                          showBadge={false}
+                        />
+                        <p>{player.name}</p>
+                      </div>
+                      <div className={styles.bubble}>
+                        <p>{message.contents}</p>
+                      </div>
+                    </div>
                   );
                 })}
                 <div className={styles.roundWrapper}>
                   <hr />
-                  <p>Round {round.index + 1}</p>
+                  <p>Round {index + 1}</p>
                   <hr />
                 </div>
               </>

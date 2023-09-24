@@ -1,15 +1,14 @@
 "use client";
 
 import React, { useState, createContext, useContext, useEffect } from "react";
-import { Answer, GameEvent, GameState, Player, Question, Vote } from "../types";
-import DUMMY_STATE from "./__test__/DUMMY_STATE";
+import { Answer, GameEvent, ClientGameState, Question, Vote } from "../types";
 import { socket } from "../lib/socket";
 
 export type GameContextType = {
   connected?: boolean; // undefined = loading...
   live: boolean;
   playerId?: string;
-  state?: GameState;
+  state?: ClientGameState;
   prevChange?: Date;
   nextChange?: Date;
   actions: {
@@ -20,20 +19,6 @@ export type GameContextType = {
   };
 };
 
-const TEST: GameContextType = {
-  connected: true,
-  live: true,
-  playerId: "test1",
-  state: DUMMY_STATE,
-  prevChange: new Date(),
-  nextChange: new Date(new Date().setMinutes(new Date().getMinutes() + 1)),
-  actions: {
-    attemptJoin: () => {},
-    question: () => {},
-    answer: () => {},
-    vote: () => {},
-  },
-};
 const DEFAULT: GameContextType = {
   connected: undefined,
   live: false,
@@ -63,7 +48,9 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
   const [nextChange, setNextChange] = useState<Date | undefined>(
     INITIAL.nextChange
   );
-  const [state, setState] = useState<GameState | undefined>(INITIAL.state);
+  const [state, setState] = useState<ClientGameState | undefined>(
+    INITIAL.state
+  );
 
   useEffect(() => {
     if (!socket) return;
@@ -100,8 +87,28 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
             }
             case "beginRound":
             case "message": {
-              setState(event.data);
+              setState({
+                ...event.data,
+                pendingAskerId: undefined,
+                pendingAnswererId: undefined,
+              });
               return;
+            }
+            case "waitForQuestion": {
+              setState((prevState) => ({
+                ...prevState!,
+                pendingAskerId: stateEvent.askerId,
+                pendingAnswererId: undefined,
+              }));
+              break;
+            }
+            case "waitForAnswer": {
+              setState((prevState) => ({
+                ...prevState!,
+                pendingAskerId: stateEvent.askerId,
+                pendingAnswererId: stateEvent.answererId,
+              }));
+              break;
             }
           }
         }
