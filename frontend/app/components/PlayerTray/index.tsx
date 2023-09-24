@@ -48,7 +48,7 @@ interface Props {
 }
 
 export default function PlayerTray({ showBadges = true, ...props }: Props) {
-  const { state } = useGameContext();
+  const { playerId, state } = useGameContext();
 
   const [selectedPlayer, setSelectedPlayer] = React.useState<Player>();
   const [openPlayer, setOpenPlayer] = React.useState<Player>();
@@ -61,6 +61,10 @@ export default function PlayerTray({ showBadges = true, ...props }: Props) {
           let wrapperStyle = "";
           if (isSelected) {
             wrapperStyle = styles.selected;
+          }
+          // Don't show current player
+          if (player.id === playerId) {
+            return null;
           }
           return (
             <PlayerPic

@@ -97,7 +97,7 @@ function UserAction({ type }: { type: UserActionType }) {
 
         question({
           contents: text,
-          askeeId: selectedPlayer.id,
+          answererId: selectedPlayer.id,
         });
         setDidSubmit(true);
         setSelectedPlayer(undefined);
