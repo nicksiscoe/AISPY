@@ -269,8 +269,6 @@ function ChatFeed(props: Props) {
     }
   }, [state]);
 
-  console.log(state, userActionType);
-
   const player = useMemo(() => {
     return state?.players.find((p) => p.id === playerId);
   }, [state?.players, playerId]);
@@ -281,13 +279,18 @@ function ChatFeed(props: Props) {
         <div className={styles.feed}>
           <div id="feed-anchor" ref={scrollAnchorRef} />
           {[...(state?.rounds || [])].reverse().map((round, index) => {
+            console.log(round, index);
             const roundOngoing = index === (state?.rounds.length || 0) - 1;
             return (
               <>
                 <RoundPhase phase={round.phase} ongoing={roundOngoing} />
                 {[...round.messages].reverse().map((message) => {
                   const player = state?.players.find(
-                    (p) => p.id === message.askerId
+                    (p) =>
+                      p.id ===
+                      (message.messageType === "question"
+                        ? message.askerId
+                        : message.answererId)
                   );
                   const fromMe = message.askerId === playerId;
                   if (!player) return null;
@@ -332,9 +335,7 @@ function ChatFeed(props: Props) {
       <div className={styles.actionWrapper}>
         {!userActionType ? (
           <p className={styles.noneRequired}>
-            {!state?.rounds.length
-              ? "Preparing to begin..."
-              : "Waiting on other players"}
+            {!state?.rounds.length ? "Preparing to begin..." : "Waiting..."}
           </p>
         ) : (
           <UserAction type={userActionType} />

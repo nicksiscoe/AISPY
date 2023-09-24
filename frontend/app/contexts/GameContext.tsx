@@ -95,19 +95,19 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
               return;
             }
             case "waitForQuestion": {
-              setState((prevState) => ({
-                ...prevState!,
+              setState({
+                ...event.data,
                 pendingAskerId: stateEvent.askerId,
                 pendingAnswererId: undefined,
-              }));
+              });
               break;
             }
             case "waitForAnswer": {
-              setState((prevState) => ({
-                ...prevState!,
+              setState({
+                ...event.data,
                 pendingAskerId: undefined,
                 pendingAnswererId: stateEvent.answererId,
-              }));
+              });
               break;
             }
           }
