@@ -86,29 +86,11 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
               return;
             }
             case "beginRound":
-            case "message": {
-              setState({
-                ...event.data,
-                pendingAskerId: undefined,
-                pendingAnswererId: undefined,
-              });
-              return;
-            }
-            case "waitForQuestion": {
-              setState({
-                ...event.data,
-                pendingAskerId: stateEvent.askerId,
-                pendingAnswererId: undefined,
-              });
-              break;
-            }
+            case "message":
+            case "waitForQuestion":
             case "waitForAnswer": {
-              setState({
-                ...event.data,
-                pendingAskerId: undefined,
-                pendingAnswererId: stateEvent.answererId,
-              });
-              break;
+              setState(event.data);
+              return;
             }
           }
           break;

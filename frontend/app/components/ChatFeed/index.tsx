@@ -249,12 +249,18 @@ function ChatFeed(props: Props) {
       }
       case "chat": {
         // If I was just asked a question...
-        if (state.pendingAnswererId === playerId) {
+        if (
+          state.latestEvent.type === "waitForAnswer" &&
+          state.latestEvent.answererId === playerId
+        ) {
           setUserActionType(UserActionType.ANSWER);
           break;
         }
         // If I need to ask someone a question...
-        if (state.pendingAskerId === playerId) {
+        if (
+          state.latestEvent.type === "waitForQuestion" &&
+          state.latestEvent.askerId === playerId
+        ) {
           setUserActionType(UserActionType.ASK);
           break;
         }

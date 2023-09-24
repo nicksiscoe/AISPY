@@ -10,7 +10,4 @@ export enum UserActionType {
   VOTE = "vote",
 }
 
-export interface ClientGameState extends GameState {
-  pendingAskerId?: string;
-  pendingAnswererId?: string;
-}
+export interface ClientGameState extends GameState {}
