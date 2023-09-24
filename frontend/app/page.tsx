@@ -86,7 +86,7 @@ export default function Home() {
       setShowIntro(true);
       const timeout = setTimeout(() => {
         setShowIntro(false);
-      }, 5000);
+      }, 2000);
       return () => clearTimeout(timeout);
     }
   }, [gameContext.live]);

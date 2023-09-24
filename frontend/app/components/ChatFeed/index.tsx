@@ -268,7 +268,11 @@ function ChatFeed(props: Props) {
       )}
       <div className={styles.actionWrapper}>
         {!userActionType ? (
-          <p className={styles.noneRequired}>Waiting on other players...</p>
+          <p className={styles.noneRequired}>
+            {!state?.rounds.length
+              ? "Preparing to begin..."
+              : "Waiting on other players"}
+          </p>
         ) : (
           <UserAction type={userActionType} />
         )}

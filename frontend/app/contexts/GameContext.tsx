@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, createContext, useContext, useEffect } from "react";
-import { Begin, GameState, Joining, StateChange } from "../types";
+import { GameEvent, GameState } from "../types";
 import DUMMY_STATE from "./__test__/DUMMY_STATE";
 import { socket } from "../lib/socket";
 
@@ -64,39 +64,49 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
       setConnected(false);
       localStorage.clear();
     };
-    const onJoining = (event: Joining) => {
-      setPlayerId(event.data.playerId);
-    };
-    const onBegin = (event: Begin) => {
-      setState(event.data);
-      if (event.ends) {
-        setPrevChance(new Date());
-        setNextChange(new Date(event.ends));
-      }
-    };
-    const onStateChange = (event: StateChange) => {
-      setState(event.data);
-      if (event.ends) {
-        setPrevChance(nextChange || new Date());
-        setNextChange(new Date(event.ends));
+    const onMessage = (event: GameEvent) => {
+      switch (event.type) {
+        case "joining": {
+          setPlayerId(event.data.playerId);
+          break;
+        }
+        case "begin": {
+          setState(event.data);
+          if (event.ends) {
+            setPrevChance(new Date());
+            setNextChange(new Date(event.ends));
+          }
+          break;
+        }
+        case "beginRound": {
+          // TODO: no-op?
+          break;
+        }
+        case "stateChange": {
+          setState(event.data);
+          if (event.ends) {
+            setPrevChance(nextChange || new Date());
+            setNextChange(new Date(event.ends));
+          }
+          break;
+        }
+        default: {
+          console.error("Unhandled Socket Message", JSON.stringify(event));
+        }
       }
     };
 
     socket.on("connect", onConnect);
     socket.on("connect_error", onConnectError);
     socket.on("disconnect", onDisconnect);
-    socket.on("joining", onJoining);
-    socket.on("begin", onBegin);
-    socket.on("stateChange", onStateChange);
+    socket.on("message", onMessage);
 
     return () => {
       if (!socket) return;
       socket.off("connect", onConnect);
       socket.off("connect_error", onConnectError);
       socket.off("disconnect", onDisconnect);
-      socket.off("joining", onJoining);
-      socket.off("begin", onBegin);
-      socket.off("stateChange", onStateChange);
+      socket.off("message", onMessage);
       socket.close();
     };
   }, []);
