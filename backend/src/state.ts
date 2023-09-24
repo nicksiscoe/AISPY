@@ -1,6 +1,7 @@
 export type StateEvent =
   | BeginGame
   | BeginRound
+  | HandleVoteResults
   | NewMessage
   | NextQuestionOrVote
   | WaitForAnswer
@@ -16,6 +17,7 @@ export type BeginRound = SE<'beginRound'>;
 export type WaitForQuestion = SE<'waitForQuestion', { askerId: string }>;
 export type WaitForAnswer = SE<'waitForAnswer', UserMessage>;
 export type WaitForVotes = SE<'waitForVotes'>;
+export type HandleVoteResults = SE<'handleVoteResults', VoteResults>;
 export type NextQuestionOrVote = SE<'nextQuestionOrVote', UserMessage>;
 
 export interface GameState {
@@ -30,6 +32,10 @@ export interface Player extends Persona {
   id: string;
   status: 'active' | 'eliminated';
 }
+
+export type VoteResults = {
+  results: { [voterId: string]: string };
+};
 
 export interface Persona {
   age: number;

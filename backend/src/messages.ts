@@ -30,7 +30,7 @@ export type Question = M<
 export type Vote = M<
   'vote',
   {
-    /* TBD */
+    playerId: string;
   }
 >;
 
