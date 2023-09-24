@@ -1,20 +1,36 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { RoundPhase, UserActionType } from "@/app/types";
 import styles from "./index.module.scss";
 import { useGameContext } from "@/app/contexts/GameContext";
 import PlayerTray from "../PlayerTray";
 import CountdownTimer from "../CountdownTimer";
 
-function RoundPhase({ phase }: { phase: RoundPhase }) {
+function RoundPhase({
+  phase,
+  ongoing,
+}: {
+  phase: RoundPhase;
+  ongoing: boolean;
+}) {
+  const { playerId, state } = useGameContext();
+
   switch (phase.type) {
     case "chat": {
       return (
         <>
-          {phase.messages.map((message) => {
+          {[...phase.messages].reverse().map((message) => {
+            const player = state?.players.find((p) => p.id === message.from);
+            const fromMe = message.from === playerId;
+            if (!player) return null;
+
             return (
               <div key={`${phase.type}-m-${message.id}`}>
-                <p>{message.from}</p>
-                <p>{message.contents}</p>
+                <p>{player.name}</p>
+                <div
+                  className={`${styles.bubble} ${fromMe ? styles.mine : ""}`}
+                >
+                  <p>{message.contents}</p>
+                </div>
               </div>
             );
           })}
@@ -22,7 +38,19 @@ function RoundPhase({ phase }: { phase: RoundPhase }) {
       );
     }
     case "vote": {
-      return <p>voting...</p>;
+      if (ongoing) {
+        return (
+          <div className={styles.voting}>
+            <p>Voting...</p>
+          </div>
+        );
+      } else {
+        return (
+          <div className={styles.voting}>
+            <p>Voting complete.</p>
+          </div>
+        );
+      }
     }
   }
 }
@@ -111,6 +139,10 @@ function ChatFeed(props: Props) {
     }
   }, [state]);
 
+  const player = useMemo(() => {
+    return state?.players.find((p) => p.id === playerId);
+  }, [state?.players, playerId]);
+
   console.log(state);
 
   return (
@@ -119,25 +151,27 @@ function ChatFeed(props: Props) {
         <div className={styles.feed}>
           <div id="feed-anchor" ref={scrollAnchorRef} />
           {state?.rounds.map((round) => {
+            const roundOngoing = round.status === "ongoing";
             return (
               <>
-                <RoundPhase phase={round.currentPhase} />
+                <RoundPhase phase={round.currentPhase} ongoing={roundOngoing} />
                 {round.previousPhases.map((previousPhase) => {
                   return (
                     <RoundPhase
                       key={`${round.id}-phase-${previousPhase.type}`}
                       phase={previousPhase}
+                      ongoing={false}
                     />
                   );
                 })}
-                <div>
-                  <p>Round {round.id + 1}</p>
+                <div className={styles.roundWrapper}>
+                  <p>~ Round {round.id + 1} ~</p>
                 </div>
               </>
             );
           })}
-          <div>
-            <p>Welcome to the game.</p>
+          <div className={styles.welcome}>
+            <p>Welcome, {player?.name || "human"}.</p>
           </div>
         </div>
       </div>
