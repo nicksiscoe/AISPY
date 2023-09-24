@@ -4,6 +4,7 @@ import styles from "./index.module.scss";
 import { useGameContext } from "@/app/contexts/GameContext";
 import PlayerTray from "../PlayerTray";
 import CountdownTimer from "../CountdownTimer";
+import PlayerPic from "../PlayerPic";
 
 function RoundPhase({
   phase,
@@ -29,6 +30,7 @@ function RoundPhase({
                 className={styles.message}
               >
                 <div className={styles.author}>
+                  <PlayerPic player={player} size={20} showBadge={false} />
                   <p>{player.name}</p>
                 </div>
                 <div
@@ -109,7 +111,7 @@ function UserAction({ type }: { type: UserActionType }) {
       return (
         <div>
           <p>Select a player to interrogate...</p>
-          <PlayerTray />
+          <PlayerTray showBadges={false} />
           <div className={styles.text}>
             <textarea
               placeholder={"Ask a question..."}
@@ -159,6 +161,7 @@ function UserAction({ type }: { type: UserActionType }) {
         <div>
           <p>Vote for a player to eliminate...</p>
           <PlayerTray
+            showBadges={false}
             onSelect={(player) => {
               console.log("poop", player);
             }}
