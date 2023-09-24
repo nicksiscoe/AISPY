@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Player, Round, UserActionType } from "@/app/types";
+import { Player, Round, UserActionType, WaitForAnswer } from "@/app/types";
 import styles from "./index.module.scss";
 import { useGameContext } from "@/app/contexts/GameContext";
 import PlayerTray from "../PlayerTray";
@@ -62,6 +62,7 @@ const MAX_INPUT_HEIGHT = 120;
 
 function UserAction({ type }: { type: UserActionType }) {
   const {
+    state,
     actions: { question, answer, vote },
   } = useGameContext();
 
@@ -89,7 +90,7 @@ function UserAction({ type }: { type: UserActionType }) {
   };
 
   const attemptSubmitText = () => {
-    if (!text) return;
+    if (!state?.latestEvent || !text) return;
 
     switch (type) {
       case UserActionType.ASK: {
@@ -107,7 +108,7 @@ function UserAction({ type }: { type: UserActionType }) {
       case UserActionType.ANSWER: {
         answer({
           contents: text,
-          questionId: "", // TODO: How do we know who to answer?
+          questionId: (state.latestEvent as WaitForAnswer).questionId,
         });
         setDidSubmit(true);
         setText("");
@@ -125,7 +126,7 @@ function UserAction({ type }: { type: UserActionType }) {
     switch (type) {
       case UserActionType.VOTE: {
         vote({
-          /* TODO */
+          playerId: selectedPlayer.id,
         });
         setSelectedPlayer(undefined);
         break;
@@ -141,7 +142,7 @@ function UserAction({ type }: { type: UserActionType }) {
 
   switch (type) {
     case UserActionType.ASK: {
-      const submitDisabled = didSubmit || text.length < 30;
+      const submitDisabled = didSubmit || !selectedPlayer || text.length < 30;
       return (
         <div>
           <p>Select a player to interrogate...</p>
@@ -269,7 +270,9 @@ function ChatFeed(props: Props) {
         break;
       }
       case "vote": {
-        setUserActionType(UserActionType.VOTE);
+        if (state.latestEvent.type === "waitForVotes") {
+          setUserActionType(UserActionType.VOTE);
+        }
         break;
       }
     }
@@ -290,7 +293,7 @@ function ChatFeed(props: Props) {
             return (
               <>
                 <RoundPhase phase={round.phase} ongoing={roundOngoing} />
-                {[...round.messages].reverse().map((message) => {
+                {round.messages.map((message) => {
                   const player = state?.players.find(
                     (p) =>
                       p.id ===

@@ -88,7 +88,8 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
             case "beginRound":
             case "message":
             case "waitForQuestion":
-            case "waitForAnswer": {
+            case "waitForAnswer":
+            case "waitForVotes": {
               setState(event.data);
               return;
             }
