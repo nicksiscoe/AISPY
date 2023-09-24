@@ -11,19 +11,11 @@ export default {
         messages: [
           {
             contents: "yo yo yo what is up kids",
-            from: "test1",
+            from: "test2",
             id: "testChat1",
             sentAt: 123675100023,
-            to: "test3",
-            type: "question",
-          },
-          {
-            contents: "nothing much",
-            from: "test3",
-            id: "testChat2",
-            sentAt: 123675160023,
             to: "test1",
-            type: "answer",
+            type: "question",
           },
         ],
       },
@@ -32,10 +24,11 @@ export default {
     },
     {
       id: 0,
-      currentPhase: {
-        type: "vote",
-      },
       previousPhases: [
+        {
+          type: "vote",
+          eliminated: "test2",
+        },
         {
           type: "chat",
           messages: [

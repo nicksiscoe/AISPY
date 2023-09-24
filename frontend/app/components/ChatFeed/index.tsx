@@ -24,8 +24,13 @@ function RoundPhase({
             if (!player) return null;
 
             return (
-              <div key={`${phase.type}-m-${message.id}`}>
-                <p>{player.name}</p>
+              <div
+                key={`${phase.type}-m-${message.id}`}
+                className={styles.message}
+              >
+                <div className={styles.author}>
+                  <p>{player.name}</p>
+                </div>
                 <div
                   className={`${styles.bubble} ${fromMe ? styles.mine : ""}`}
                 >
@@ -45,41 +50,107 @@ function RoundPhase({
           </div>
         );
       } else {
-        return (
-          <div className={styles.voting}>
-            <p>Voting complete.</p>
-          </div>
+        const eliminatedPlayer = state?.players.find(
+          (p) => p.id === phase.eliminated
         );
+        if (!!eliminatedPlayer) {
+          return (
+            <div className={`${styles.voting} ${styles.eliminated}`}>
+              <p>Eliminated {eliminatedPlayer.name}.</p>
+            </div>
+          );
+        } else {
+          return (
+            <div className={`${styles.voting} ${styles.eliminated}`}>
+              <p>Voting complete.</p>
+            </div>
+          );
+        }
       }
     }
   }
 }
 
+const MAX_INPUT_HEIGHT = 120;
+
 function UserAction({ type }: { type: UserActionType }) {
   const [text, setText] = useState("");
 
+  const lastInputTarget = useRef<HTMLTextAreaElement>();
+  const updateInputHeight = (target?: HTMLTextAreaElement) => {
+    if (!target) return;
+
+    target.style.height = "inherit";
+    target.style.height = `${Math.min(
+      target.scrollHeight,
+      MAX_INPUT_HEIGHT
+    )}px`;
+  };
+  useEffect(() => {
+    if (!text.length) updateInputHeight(lastInputTarget.current);
+  }, [text]);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    const target = e.target as HTMLTextAreaElement;
+    updateInputHeight(target);
+    lastInputTarget.current = target;
+  };
+
+  const attemptSubmitText = () => {
+    if (!text) return;
+
+    // TODO: Submit to SOCKET BOI
+    // gameContext.submit();
+    // setText("");
+  };
+
   switch (type) {
     case UserActionType.ASK: {
+      const disabled = text.length < 30;
       return (
         <div>
           <p>Select a player to interrogate...</p>
           <PlayerTray />
-          <input
-            placeholder="Ask a question..."
-            onChange={(e) => setText(e.target.value)}
-            value={text}
-          />
+          <div className={styles.text}>
+            <textarea
+              placeholder={"Ask a question..."}
+              value={text}
+              onInput={(e: any) => setText(e.target.value)}
+              onKeyDown={handleKeyDown}
+              rows={1}
+            />
+            <button
+              className={`${styles.sendButton} ${
+                disabled ? styles.disabled : ""
+              }`}
+              onClick={attemptSubmitText}
+              disabled={disabled}
+            >
+              💬
+            </button>
+          </div>
         </div>
       );
     }
     case UserActionType.ANSWER: {
+      const disabled = text.length < 30;
       return (
-        <div>
-          <input
-            placeholder="Answer..."
-            onChange={(e) => setText(e.target.value)}
+        <div className={styles.text}>
+          <textarea
+            placeholder={"Answer..."}
             value={text}
+            onInput={(e: any) => setText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            rows={1}
           />
+          <button
+            className={`${styles.sendButton} ${
+              disabled ? styles.disabled : ""
+            }`}
+            onClick={attemptSubmitText}
+            disabled={disabled}
+          >
+            💬
+          </button>
         </div>
       );
     }
@@ -132,9 +203,12 @@ function ChatFeed(props: Props) {
         }
         // If I need to ask someone a question...
         // ???
+
+        break;
       }
       case "vote": {
         setUserActionType(UserActionType.VOTE);
+        break;
       }
     }
   }, [state]);
@@ -154,7 +228,12 @@ function ChatFeed(props: Props) {
             const roundOngoing = round.status === "ongoing";
             return (
               <>
-                <RoundPhase phase={round.currentPhase} ongoing={roundOngoing} />
+                {round.currentPhase && (
+                  <RoundPhase
+                    phase={round.currentPhase}
+                    ongoing={roundOngoing}
+                  />
+                )}
                 {round.previousPhases.map((previousPhase) => {
                   return (
                     <RoundPhase
