@@ -267,7 +267,7 @@ function updateState<T extends StateEvent['type']>(
           params.BEGIN_ROUND_DURATION,
           {}
         ),
-        rounds: [...state.rounds, { messages: [], phase: 'chat' }],
+        rounds: [{ messages: [], phase: 'chat' }, ...state.rounds],
       };
 
     case 'handleVoteResults': {
