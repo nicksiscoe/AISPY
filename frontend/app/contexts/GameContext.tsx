@@ -80,28 +80,38 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
       localStorage.clear();
     };
     const onMessage = (event: GameEvent) => {
+      console.log("message received", event);
+      // waiting on back end to tell us who is to be asking the question
+      // "im gettin there.... " -alex
+
       switch (event.type) {
         case "joining":
-          return setPlayerId(event.data.playerId);
+          return setPlayerId(event.data.playerId); // successful
         case "stateChange": {
           const stateEvent = event.data.latestEvent;
           switch (stateEvent.type) {
-            case "beginGame":
+            case "beginGame": {
               setState(event.data);
               if (stateEvent.ends) {
                 setPrevChange(new Date());
                 setNextChange(new Date(stateEvent.ends));
               }
               return;
-            case "beginRound": {
-              // TODO: no-op?
+            }
+            case "beginRound":
+            case "message": {
+              setState(event.data);
               return;
             }
           }
-          return;
+        }
+        case "crash": {
+          console.error("Game state machine crashed");
+          break;
         }
         default: {
           console.error("Unhandled Socket Message", JSON.stringify(event));
+          break;
         }
       }
     };
@@ -111,7 +121,10 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
     socket.on("disconnect", onDisconnect);
     socket.on("message", onMessage);
 
+    // TODO: Remove this stupid alex thing
     socket.emit("message", { type: "join" });
+    // ^^^^
+
     return () => {
       if (!socket) return;
       socket.off("connect", onConnect);

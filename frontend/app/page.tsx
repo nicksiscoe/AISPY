@@ -9,8 +9,11 @@ import { GameState } from "./types";
 import PlayerTray from "./components/PlayerTray";
 import Title from "./components/Title";
 import Background from "./components/Background";
+import EliminatedModal from "./components/EliminatedModal";
+import ConnectionHeader from "./components/ConnectionHeader";
 
-function Intro({ context }: { context: GameContextType }) {
+function Intro() {
+  const context = useGameContext();
   const player = context.state?.players.find((p) => p.id === context.playerId);
 
   if (!player) return null; // wtf?
@@ -24,6 +27,16 @@ function Intro({ context }: { context: GameContextType }) {
 }
 
 function Game() {
+  const context = useGameContext();
+  const player = context.state?.players.find((p) => p.id === context.playerId);
+
+  const [showPlayerEliminated, setShowPlayerEliminated] = useState(false);
+  useEffect(() => {
+    if (player?.status === "eliminated") {
+      setShowPlayerEliminated(true);
+    }
+  }, [player?.status]);
+
   return (
     <div className={styles.game}>
       <Title />
@@ -31,54 +44,16 @@ function Game() {
         <PlayerTray />
       </div>
       <ChatFeed />
+      <EliminatedModal
+        isOpen={showPlayerEliminated}
+        onClose={() => setShowPlayerEliminated(false)}
+      />
     </div>
   );
 }
 
 export default function Home() {
   const gameContext = useGameContext();
-
-  const [showConnectionHeader, setShowConnectionHeader] =
-    useState<boolean>(true);
-  useEffect(() => {
-    setShowConnectionHeader(true);
-
-    if (!!gameContext.connected) {
-      const timeout = setTimeout(() => {
-        setShowConnectionHeader(false);
-      }, 2500);
-      return () => clearTimeout(timeout);
-    }
-  }, [gameContext.connected]);
-  const renderConnectionHeader = () => {
-    if (!showConnectionHeader) return null;
-
-    switch (gameContext.connected) {
-      case undefined: {
-        return (
-          <div className={styles.connectionHeader}>
-            <p>Connecting...</p>
-          </div>
-        );
-      }
-      case true: {
-        return (
-          <div className={`${styles.connectionHeader} ${styles.connected}`}>
-            <p>Connected.</p>
-          </div>
-        );
-        break;
-      }
-      case false: {
-        return (
-          <div className={`${styles.connectionHeader} ${styles.disconnected}`}>
-            <p>Disconnected.</p>
-          </div>
-        );
-        break;
-      }
-    }
-  };
 
   // If the game just started, show intro briefly (here is your identity)
   const [showIntro, setShowIntro] = useState(false);
@@ -96,22 +71,22 @@ export default function Home() {
     return (
       <main className={styles.main}>
         <Background />
-        {renderConnectionHeader()}
+        <ConnectionHeader />
         <Welcome />
       </main>
     );
   } else if (showIntro) {
     return (
       <main className={styles.main}>
-        {renderConnectionHeader()}
-        <Intro context={gameContext} />
+        <ConnectionHeader />
+        <Intro />
       </main>
     );
   } else {
     return (
       <main className={styles.main}>
         <Background />
-        {renderConnectionHeader()}
+        <ConnectionHeader />
         <Game />
       </main>
     );

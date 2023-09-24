@@ -277,7 +277,7 @@ function ChatFeed(props: Props) {
           setUserActionType(UserActionType.ANSWER);
         }
         // If I need to ask someone a question...
-        // ???
+        // TODO: ???
 
         break;
       }
@@ -291,8 +291,6 @@ function ChatFeed(props: Props) {
   const player = useMemo(() => {
     return state?.players.find((p) => p.id === playerId);
   }, [state?.players, playerId]);
-
-  console.log(state);
 
   return (
     <>
