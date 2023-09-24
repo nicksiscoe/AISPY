@@ -47,6 +47,16 @@ This gameplay continues until 1 human remains or the A.I. remains the lone victo
 
 <br /><br />
 
+## Running Locally
+
+1. `cd` into `/frontend`
+2. `npm i`
+3. create a `.env.local` file
+4. populate with `NEXT_PUBLIC_SOCKET_URL=localhost:3010`
+5. `npm run dev`
+6. in another terminal window / instance, `cd` into `/backend`
+7. `npm i`
+8. `npm run dev`
 
 
 
