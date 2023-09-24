@@ -1,6 +1,7 @@
 export type StateEvent =
   | BeginGame
   | BeginRound
+  | GameOver
   | HandleVoteResults
   | NewMessage
   | NextQuestionOrVote
@@ -19,6 +20,7 @@ export type WaitForAnswer = SE<'waitForAnswer', UserMessage>;
 export type WaitForVotes = SE<'waitForVotes'>;
 export type HandleVoteResults = SE<'handleVoteResults', VoteResults>;
 export type NextQuestionOrVote = SE<'nextQuestionOrVote', UserMessage>;
+export type GameOver = SE<'gameOver', { outcome: 'humansWin' | 'aiWins' }>;
 
 export interface GameState {
   id: string;

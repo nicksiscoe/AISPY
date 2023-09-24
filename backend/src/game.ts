@@ -195,7 +195,6 @@ const next = async (game: Game): Promise<Game> => {
       );
 
       const state = updateState(game.state, 'waitForAnswer', question);
-
       return next(await emitStateAndWait({ ...game, state }));
     }
     case 'waitForAnswer': {
@@ -256,7 +255,37 @@ function updateState<T extends StateEvent['type']>(
       };
 
     case 'handleVoteResults': {
-      return state;
+      const { ...votes } = maybeMessage! as VoteResults & GameMessageMetadata;
+      const playerIds = Object.values(votes.results);
+      const voteCounts = Object.fromEntries(
+        Object.values(votes.results).map(id => [
+          id,
+          playerIds.filter(pid => pid === id).length,
+        ])
+      );
+
+      const maxVotes = Math.max(...Object.values(voteCounts));
+
+      const [loserId] = Object.entries(voteCounts).find(
+        ([, count]) => count === maxVotes
+      )!;
+
+      const latestEvent =
+        loserId === 'ai'
+          ? createStateEvent('gameOver', 9999, { outcome: 'humansWin' })
+          : createStateEvent('gameOver', 9999, { outcome: 'aiWins' });
+
+      return {
+        ...state,
+        latestEvent,
+        rounds: [
+          {
+            ...state.rounds[0],
+            phase: 'ended',
+          },
+          ...state.rounds.slice(1),
+        ],
+      };
     }
     case 'nextQuestionOrVote': {
       const { ...answer } = maybeMessage! as Answer & GameMessageMetadata;
