@@ -43,7 +43,7 @@ export const createStateEvent = <
   ({
     id: `${Date.now()}`,
     duration,
-    ends: msFromNow(duration).toUTCString(),
+    ends: msFromNow(duration + 1000).toUTCString(),
     type,
     ...data,
   }) as unknown as E;
