@@ -18,7 +18,6 @@ Ensure you have reviewed the [Rules & FAQ](https://hackmidwest.com/#faq)
 2.   **Alex Eden**  || **aeden@payitgov.com** || **alexeden**
 3.   **Miller Bath**  || **mbath@payitgov.com** || **bath-tub**
 4.   **Royce Rogers**  || **roycerogers@payitgov.com** || **ruckus1911**
-5.
 
 <br /><br />
 
