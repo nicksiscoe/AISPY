@@ -4,7 +4,7 @@ import { Unbounded } from "next/font/google";
 import { GameProvider } from "./contexts/GameContext";
 
 const unbounded = Unbounded({
-  weight: ["500", "800"],
+  weight: ["300", "500", "800"],
   subsets: ["latin"],
   variable: "--unbounded-font",
   display: "swap",

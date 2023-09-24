@@ -99,7 +99,6 @@ const collectVotes = async (
     setTimeout(
       () =>
         ok({
-          // ...(msg as M),
           results: votes,
           id: Date.now(),
           senderId: '',
@@ -149,11 +148,6 @@ const getAnswerFromAi = async (
 
   // 4. return response to front end
   console.log('question response', questionResponse.data);
-
-  // const AI_TEXT_RESPONSE = questionResponse.data.at(0);
-  // // TODO: @alex do something with AI_TEXT_RESPONSE, it is the legit AI response;
-
-  // console.log('AI_TEXT_RESPONSE: ', AI_TEXT_RESPONSE);
   return {
     data: {
       contents: questionResponse.data.join('') ?? 'FUCK',

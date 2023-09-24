@@ -1,19 +1,20 @@
 .feedWrapper {
-  flex: 1;
-  z-index: 1;
-  overflow: hidden;
-  width: inherit;
-  height: 100%;
-  position: relative;
-  display: flex;
-  transition: transform 0.2s cubic-bezier(0, 0, 0.31, 1);
-  -webkit-overflow-scrolling: touch;
-  overflow: visible;
-  overflow-y: scroll;
-  overscroll-behavior-y: none;
-  overflow-x: hidden;
   -ms-overflow-style: none; /* IE and Edge */
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  overflow: hidden;
+  overflow: visible;
+  overscroll-behavior-y: none;
+  position: relative;
   scrollbar-width: none;
+  transition: transform 0.2s cubic-bezier(0, 0, 0.31, 1);
+  width: inherit;
+  z-index: 1;
   & ::-webkit-scrollbar {
     width: 0 !important;
   }
@@ -91,8 +92,7 @@
         }
       }
       &.roundWrapper,
-      &.voting,
-      &.interrogation {
+      &.voting {
         padding: 0.5em;
         display: flex;
         justify-content: center;
@@ -103,8 +103,7 @@
           font-weight: 900;
         }
       }
-      &.voting,
-      &.interrogation {
+      &.voting {
         p {
           font-size: 0.8rem;
         }
@@ -205,5 +204,23 @@
       border: none;
       outline: none;
     }
+  }
+}
+
+.activityIndicator {
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  box-sizing: border-box;
+  display: flex;
+  display: flex;
+  flex-direction: column;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  font-size: 0.9rem;
+  padding: 1rem !important;
+
+  * + * {
+    margin-top: 1rem;
   }
 }

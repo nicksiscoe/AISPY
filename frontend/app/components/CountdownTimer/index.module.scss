@@ -1,31 +1,22 @@
 .wrapper {
   width: 100%;
-  padding: 0.5em;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-
-  .time {
-    font-weight: 900;
-    font-size: 0.8rem;
-    color: white;
-    opacity: 0.4;
-
-    &.danger {
-      opacity: 1;
-      color: red;
-    }
-  }
+  // padding: 0 1rem 1rem;
 
   .outer {
     width: 100%;
-    height: 0.5em;
+    height: 0.9em;
     background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 2px;
+    opacity: 0.78;
+
     .inner {
       height: 100%;
-      background-color: white;
-      border-radius: 2px;
+      background: linear-gradient(90deg, #11d3ff 0%, rgb(0, 97, 214) 100%);
+      transition: width linear 250ms;
+      will-change: width;
+
       &.warning {
         background-color: yellow;
       }

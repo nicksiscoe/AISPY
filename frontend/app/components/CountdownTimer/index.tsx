@@ -1,54 +1,54 @@
 import { useEffect, useMemo, useState } from "react";
 import styles from "./index.module.scss";
 
-const getTimeRemainingString = (timeInMs: number): string => {
-  // ... (unchanged)
-};
-
 interface Props {
-  start: Date;
-  // Remove the "end" prop, we will calculate it
+  duration: number;
+  ends: string;
 }
 
-function CountdownTimer({ start }: Props) {
-  const [msRemaining, setMsRemaining] = useState<number>(30 * 1000); // Initialize with 30 seconds
+function CountdownTimer({ duration, ends }: Props) {
+  const [progress, setProgress] = useState(
+    (new Date(ends).getTime() - Date.now()) / duration
+  );
 
   useEffect(() => {
-    const initialMsRemaining = 30 * 1000; // 30 seconds
-    const interval = setInterval(() => {
-      setMsRemaining((prevMsRemaining) =>
-        Math.max(prevMsRemaining - 1000, 0) // Decrease by 1 second, but not below 0
-      );
-    }, 1000);
+    console.log(
+      "new Date(ends).getTime() - Date.now()",
+      new Date(ends).getTime() - Date.now(),
+      "duration: ",
+      duration
+    );
+
+    const interval = setInterval(
+      () =>
+        setProgress(
+          Math.min(
+            1,
+            Math.max(0, (new Date(ends).getTime() - Date.now()) / duration)
+          )
+        ),
+      250
+    );
 
     return () => {
       clearInterval(interval);
+      setProgress(0);
     };
-  }, []);
+  }, [duration, ends]);
 
-  const progress = useMemo(() => {
-    const initialMsRemaining = 30 * 1000; // 30 seconds
-    if (initialMsRemaining <= 0) return 100;
-    return (1 - msRemaining / initialMsRemaining) * 100;
-  }, [msRemaining]);
+  const progressPercent = 100 - Math.min(100, Math.max(0, 100 * progress));
 
   return (
     <div className={styles.wrapper}>
-      <p className={`${styles.time} ${progress > 90 ? styles.danger : ""}`}>
-        {getTimeRemainingString(msRemaining)}
-      </p>
       <div className={styles.outer}>
         <div
-          className={`${styles.inner} ${
-            progress > 70
-              ? progress > 90
-                ? styles.danger
-                : styles.warning
-              : ""
-          }`}
-          style={{ width: `${progress}%` }}
+          className={styles.inner}
+          style={{ width: `${progressPercent}%` }}
         />
       </div>
+      {progress}
+      <br />
+      {progressPercent}
     </div>
   );
 }

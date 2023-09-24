@@ -126,7 +126,7 @@ function UserAction({ type }: { type: UserActionType }) {
       const submitDisabled = didSubmit || !selectedPlayer;
       return (
         <div>
-          <p>Select a player to interrogate...</p>
+          <p>Select the player you&apos;d like to ask a question...</p>
           <PlayerTray
             showBadges={false}
             onSelect={
@@ -207,10 +207,13 @@ function UserAction({ type }: { type: UserActionType }) {
   }
 }
 
-interface Props {}
+interface Props {
+  me: Player;
+  state: GameState;
+}
 
-function ChatFeed(props: Props) {
-  const { playerId, state, prevChange, nextChange } = useGameContext();
+function ChatFeed({ me, state }: Props) {
+  const { playerId, playerMap } = useGameContext();
 
   const scrollAnchorRef = useRef<HTMLDivElement>(null);
 
@@ -259,38 +262,31 @@ function ChatFeed(props: Props) {
     }
   }, [state]);
 
-  const player = useMemo(() => {
-    return state?.players.find(p => p.id === playerId);
-  }, [state?.players, playerId]);
-
-  if (!!prevChange && !!nextChange) {
-    console.log("prev and a next", prevChange, nextChange);
-  }
-
   return (
     <>
       <div className={styles.feedWrapper}>
         <div className={styles.feed}>
           <div id="feed-anchor" ref={scrollAnchorRef} />
-          {[...(state?.rounds || [])].reverse().map((round, index) => {
-            console.log(round, index);
-            const roundOngoing = index === (state?.rounds.length || 0) - 1;
+          <div style={{ padding: "0 1rem" }}>
+            <div className={styles.activityIndicator}>
+              <p>{getActivityMessage(state)}</p>
+              <CountdownTimer
+                duration={state.latestEvent.duration}
+                ends={state.latestEvent.ends}
+              />
+            </div>
+          </div>
+
+          {[...state.rounds].reverse().map((round, index) => {
             return (
               <Fragment key={index}>
-                {/* <RoundPhase phase={round.phase} ongoing={roundOngoing} /> */}
-                <div className={styles.interrogation}>
-                  {/* // TODO: This should tell you who is asking/answering rn */}
-                  {state && <p>{getActivityMessage(state)}</p>}
-                </div>
-
                 {round.messages.map(message => {
-                  const player = state?.players.find(
-                    p =>
-                      p.id ===
-                      (message.messageType === "question"
+                  const player =
+                    playerMap[
+                      message.messageType === "question"
                         ? message.askerId
-                        : message.answererId)
-                  );
+                        : message.answererId
+                    ];
                   const fromMe = message.askerId === playerId;
                   if (!player) return null;
 
@@ -324,20 +320,15 @@ function ChatFeed(props: Props) {
             );
           })}
           <div className={styles.welcome}>
-            <p>Welcome, {player?.name || "human"}.</p>
+            <p>Welcome, {me.name}.</p>
           </div>
         </div>
       </div>
-      {!!prevChange && !!nextChange && <CountdownTimer start={prevChange} />}
-      <div className={styles.actionWrapper}>
-        {!userActionType ? (
-          <p className={styles.noneRequired}>
-            {!state?.rounds.length ? "Preparing to begin..." : "Waiting..."}
-          </p>
-        ) : (
+      {userActionType && (
+        <div className={styles.actionWrapper}>
           <UserAction type={userActionType} />
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 }
