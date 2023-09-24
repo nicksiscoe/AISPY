@@ -39,7 +39,7 @@
 
     & > div {
       width: 100%;
-      padding: 0.5em 1em;
+      padding: 0.25em 0.5em;
       &.welcome {
         display: flex;
         justify-content: center;
@@ -47,6 +47,18 @@
         p {
           font-size: 0.9rem;
           padding: 1em;
+        }
+      }
+      &.message {
+        .author {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          p {
+            font-size: 0.7rem;
+            padding: 0.5em;
+            opacity: 0.5;
+          }
         }
       }
       &.roundWrapper,
@@ -60,6 +72,10 @@
           font-size: 1.1rem;
           font-weight: 900;
         }
+      }
+      &.voting.eliminated {
+        opacity: 0.5;
+        color: red;
       }
 
       .bubble {
@@ -82,11 +98,64 @@
   width: 100%;
   padding: 0.5em 1em;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  & > div {
+    width: 100%;
+    &.text {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 8px;
+    }
+  }
 
-  input {
-    border: 1px solid gray;
+  p {
+    font-size: 0.9rem;
+    padding: 0.5em;
+  }
+
+  textarea {
+    font-family: var(--unbounded-font);
+    background-color: rgba(255, 255, 255, 0.05);
+    border: none;
+    outline: none;
+    padding: 0.5em 1em;
+    border-radius: 20px;
+    width: 100%;
+    font-size: 0.9rem;
+    resize: none;
+
+    &:focus,
+    &:active {
+      border: none;
+      outline: none;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  .sendButton {
+    border: none;
+    outline: none;
+    border-radius: 100em;
+    min-height: 2em;
+    min-width: 2em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(180deg, #11d3ff 0%, rgb(0, 97, 214) 100%);
+    opacity: 1;
+    &.disabled {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    &:focus,
+    &:active {
+      border: none;
+      outline: none;
+    }
   }
 }

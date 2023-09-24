@@ -70,7 +70,7 @@ function CountdownTimer({ start, end }: Props) {
   }, [start, end]);
 
   const progress = useMemo(() => {
-    if (!msRemaining) return 0;
+    if (typeof msRemaining === "undefined") return 0;
     const initialMsRemaining = end.getTime() - start.getTime();
     if (initialMsRemaining < 0) return 100;
     return (1 - msRemaining / initialMsRemaining) * 100;
@@ -78,7 +78,7 @@ function CountdownTimer({ start, end }: Props) {
 
   return (
     <div className={styles.wrapper}>
-      <p>
+      <p className={`${styles.time} ${progress > 90 ? styles.danger : ""}`}>
         {typeof msRemaining === "undefined"
           ? "-"
           : getTimeRemainingString(msRemaining)}

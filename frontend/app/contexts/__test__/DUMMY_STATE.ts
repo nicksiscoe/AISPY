@@ -7,35 +7,40 @@ export default {
     {
       id: 1,
       currentPhase: {
-        type: "chat",
-        messages: [
-          {
-            contents: "yo yo yo what is up kids",
-            from: "test1",
-            id: "testChat1",
-            sentAt: 123675100023,
-            to: "test3",
-            type: "question",
-          },
-          {
-            contents: "nothing much",
-            from: "test3",
-            id: "testChat2",
-            sentAt: 123675160023,
-            to: "test1",
-            type: "answer",
-          },
-        ],
+        type: "vote",
       },
-      previousPhases: [],
+      previousPhases: [
+        {
+          type: "chat",
+          messages: [
+            {
+              contents: "yo yo yo what is up kids",
+              from: "test2",
+              id: "testChat1",
+              sentAt: 123675100023,
+              to: "test1",
+              type: "question",
+            },
+            {
+              contents: "nothing much man",
+              from: "test1",
+              id: "testChat2",
+              sentAt: 123675300023,
+              to: "test2",
+              type: "question",
+            },
+          ],
+        },
+      ],
       status: "ongoing",
     },
     {
       id: 0,
-      currentPhase: {
-        type: "vote",
-      },
       previousPhases: [
+        {
+          type: "vote",
+          eliminated: "test2",
+        },
         {
           type: "chat",
           messages: [
