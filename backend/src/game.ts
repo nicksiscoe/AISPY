@@ -83,7 +83,7 @@ const waitForMessageFrom = async <
   });
 };
 
-const run = async (game: Game): Promise<Game> => {
+const next = async (game: Game): Promise<Game> => {
   const { latestEvent } = game.state;
   console.log(`Run step ${latestEvent.type}`);
   switch (latestEvent.type) {
@@ -94,11 +94,11 @@ const run = async (game: Game): Promise<Game> => {
         ...game,
         state: updateState(game.state, 'beginRound', null),
       };
-      return run(await emitStateAndWait(updatedGame));
+      return next(await emitStateAndWait(updatedGame));
     }
     case 'beginRound': {
       const state = updateState(game.state, 'waitForQuestion', null);
-      return run(await emitStateAndWait({ ...game, state }));
+      return next(await emitStateAndWait({ ...game, state }));
     }
     case 'waitForQuestion': {
       const question = await waitForMessageFrom(
@@ -107,7 +107,7 @@ const run = async (game: Game): Promise<Game> => {
       );
 
       const state = updateState(game.state, 'waitForAnswer', question);
-      return run(await emitStateAndWait({ ...game, state }));
+      return next(await emitStateAndWait({ ...game, state }));
     }
     case 'waitForAnswer': {
       const answer = await waitForMessageFrom(
@@ -116,7 +116,7 @@ const run = async (game: Game): Promise<Game> => {
       );
 
       const state = updateState(game.state, 'nextQuestionOrVote', answer);
-      return run(await emitStateAndWait({ ...game, state }));
+      return next(await emitStateAndWait({ ...game, state }));
     }
     default:
       return game;
@@ -130,7 +130,7 @@ export const startGame = async (
 ) => {
   const aiId = 'ai';
   const state = createGameState(gameId, [...sockets.map(s => s.id), aiId]);
-  await run({ aiId, broadcaster, sockets, state });
+  await next({ aiId, broadcaster, sockets, state });
 };
 
 function updateState<T extends StateEvent['type']>(
@@ -160,6 +160,7 @@ function updateState<T extends StateEvent['type']>(
     case 'nextQuestionOrVote': {
       return state;
     }
+
     case 'waitForAnswer': {
       const currentRound = state.rounds[0];
       const { ...question } = maybeMessage! as Question & GameMessageMetadata;
@@ -196,10 +197,7 @@ function updateState<T extends StateEvent['type']>(
         .map(m => m.askerId);
 
       const eligibleAskers = state.players.filter(
-        p =>
-          !alreadyAsked.includes(p.id) &&
-          p.status !== 'eliminated' &&
-          p.id !== 'ai'
+        p => !alreadyAsked.includes(p.id) && p.status !== 'eliminated'
       );
 
       return {
