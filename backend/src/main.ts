@@ -16,10 +16,6 @@ let gameIdIndex = 0;
 io.on('connection', socket => {
   console.log('connection event', socket.id);
 
-  // socket.onAny((event, ...args) => {
-  //   console.log(`got event ${event}`);
-  // });
-
   socket
     .on('error', err => console.error('socket error', err))
     .on('disconnect', reason =>
@@ -41,17 +37,6 @@ io.on('connection', socket => {
         });
       }
     });
-
-  // setTimeout(
-  //   () =>
-  //     socket.send({
-  //       id: `${Date.now()}`,
-  //       data: { playerId: socket.id },
-  //       ends: null,
-  //       type: 'joining',
-  //     }),
-  //   500
-  // );
 });
 
 httpServer.listen(3010, () => {
