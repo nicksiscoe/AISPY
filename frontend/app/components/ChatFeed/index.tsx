@@ -142,7 +142,7 @@ function UserAction({ type }: { type: UserActionType }) {
 
   switch (type) {
     case UserActionType.ASK: {
-      const submitDisabled = didSubmit || !selectedPlayer || text.length < 30;
+      const submitDisabled = didSubmit || !selectedPlayer;
       return (
         <div>
           <p>Select a player to interrogate...</p>
@@ -150,7 +150,7 @@ function UserAction({ type }: { type: UserActionType }) {
             showBadges={false}
             onSelect={
               !didSubmit
-                ? (player) => {
+                ? player => {
                     if (selectedPlayer?.id !== player.id) {
                       setSelectedPlayer(player);
                     }
@@ -212,7 +212,7 @@ function UserAction({ type }: { type: UserActionType }) {
             showBadges={false}
             onSelect={
               !didSubmit
-                ? (player) => {
+                ? player => {
                     if (selectedPlayer?.id !== player.id) {
                       setSelectedPlayer(player);
                     }
@@ -279,7 +279,7 @@ function ChatFeed(props: Props) {
   }, [state]);
 
   const player = useMemo(() => {
-    return state?.players.find((p) => p.id === playerId);
+    return state?.players.find(p => p.id === playerId);
   }, [state?.players, playerId]);
 
   return (
@@ -293,9 +293,9 @@ function ChatFeed(props: Props) {
             return (
               <>
                 <RoundPhase phase={round.phase} ongoing={roundOngoing} />
-                {round.messages.map((message) => {
+                {round.messages.map(message => {
                   const player = state?.players.find(
-                    (p) =>
+                    p =>
                       p.id ===
                       (message.messageType === "question"
                         ? message.askerId

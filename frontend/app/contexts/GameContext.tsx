@@ -53,7 +53,6 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
   );
 
   useEffect(() => {
-    if (!socket) return;
     socket.connect();
 
     const onConnect = () => {
@@ -108,7 +107,7 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
     };
 
     socket.on("connect", onConnect);
-    socket.on("connect_error", onConnectError);
+    socket.on("connect_error", err => console.error(err));
     socket.on("disconnect", onDisconnect);
     socket.on("message", onMessage);
 
@@ -120,9 +119,8 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
     // socket.emit("TEST_AI" as any, { hello: "world" });
 
     return () => {
-      if (!socket) return;
       socket.off("connect", onConnect);
-      socket.off("connect_error", onConnectError);
+      // socket.off("connect_error", onConnectError);
       socket.off("disconnect", onDisconnect);
       socket.off("message", onMessage);
       socket.close();
