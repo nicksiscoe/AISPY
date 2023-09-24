@@ -2,7 +2,7 @@ import { BroadcastOperator, Socket } from 'socket.io';
 import { ServerToClientEvents } from './events';
 import { ClientToServerEvents } from './messages';
 import { PERSONAS } from './mocks';
-import { GameState, StateEvent } from './state';
+import { GameState, Round, StateEvent } from './state';
 import { createGameEvent, createStateEvent, pickN, wait } from './utils';
 
 export type GameSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
@@ -53,15 +53,32 @@ export const startGame = async (
   const state = createGameState(gameId, [...sockets.map(s => s.id), aiId]);
   await run('beginGame', { aiId, broadcaster, sockets, state });
 
-  // const beginRound = createStateEvent('beginRound', 3, {
-  //   id: 0,
-  //   currentPhase: {
-  //     type: 'chat',
-  //     messages: [],
-  //   },
-  //   previousPhases: [],
-  //   status: 'ongoing',
-  // });
-
   // broadcaster.emit('message', beginRound);
+};
+
+const updateState = (
+  state: GameState,
+  nextEvent: Exclude<StateEvent['type'], 'beginGame'>
+): GameState => {
+  switch (nextEvent) {
+    case 'beginRound': {
+      const newRound: Round = {
+        id: state.rounds.length,
+        currentPhase: {
+          type: 'chat',
+          messages: [],
+        },
+        previousPhases: [],
+        status: 'ongoing',
+      };
+      // const beginRound = createStateEvent('beginRound', 3, {
+      //   id: 0,
+      // });
+
+      return { ...state };
+    }
+
+    default:
+      return state;
+  }
 };
