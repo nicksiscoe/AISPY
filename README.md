@@ -1,6 +1,7 @@
 # A.I. SPY - ELIMINATE THE A.I.
 <br /><br />
 
+<img width="1504" alt="image" src="https://github.com/nicksiscoe/AISPY/assets/31223408/1620e804-1ef7-4b6c-a957-53103dbfc146">
 
 ## Getting Started
 Ensure you have reviewed the [Rules & FAQ](https://hackmidwest.com/#faq)
