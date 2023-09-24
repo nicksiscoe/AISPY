@@ -19,7 +19,7 @@ function Welcome(props: Props) {
           }`}
           onClick={() => {
             setAttemptedJoin(true);
-            gameContext.attemptJoin();
+            gameContext.actions.attemptJoin();
           }}
           disabled={!gameContext.connected}
         >
