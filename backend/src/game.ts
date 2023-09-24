@@ -29,7 +29,7 @@ type GameMessageWithSender = GameMessage & {
 };
 
 const createGameState = (gameId: string, playerIds: string[]): GameState => ({
-  latestEvent: createStateEvent('beginGame', 10000, {}),
+  latestEvent: createStateEvent('beginGame', params.BEGIN_GAME_DURATION, {}),
   id: gameId,
   players: pickN(playerIds.length, PERSONAS)[0].map((p, i) => ({
     ...p,
