@@ -1,7 +1,7 @@
 import { BroadcastOperator, Socket } from 'socket.io';
 import * as params from './params';
 import { ServerToClientEvents } from './events';
-import { ClientToServerEvents } from './messages';
+import { ClientToServerEvents, GameMessage } from './messages';
 import { PERSONAS } from './mocks';
 import { GameState, Round, StateEvent } from './state';
 import {
@@ -42,8 +42,27 @@ const emitStateAndWait = async (game: Game): Promise<Game> => {
   return game;
 };
 
+const waitForMessageFrom = async <
+  T extends GameMessage['type'],
+  M extends Extract<GameMessage, { type: T }>,
+>(
+  messageType: T,
+  socket: GameSocket
+): Promise<M> => {
+  return new Promise<M>(ok => {
+    console.log(`Waiting for a ${messageType} message from ${socket.id}`);
+    socket.on('message', msg => {
+      console.log(`Got a ${messageType} message from ${socket.id}`);
+      if (msg.type === messageType) {
+        ok(msg as M);
+      }
+    });
+  });
+};
+
 const run = async (game: Game): Promise<Game> => {
-  switch (game.state.latestEvent.type) {
+  const { latestEvent } = game.state;
+  switch (latestEvent.type) {
     // Begin game is handled a litte weirdly cuz it's the initialization event
     case 'beginGame':
       await emitStateAndWait(game);
@@ -55,6 +74,12 @@ const run = async (game: Game): Promise<Game> => {
     case 'beginRound':
       const state = updateState(game.state, 'waitForQuestion');
       return emitStateAndWait({ ...game, state });
+    case 'waitForQuestion':
+      // latestEvent.askerId;
+      const question = await waitForMessageFrom(
+        'question',
+        game.sockets.find(s => s.id === latestEvent.askerId)!
+      );
     default:
       return game;
   }
@@ -68,8 +93,6 @@ export const startGame = async (
   const aiId = 'ai';
   const state = createGameState(gameId, [...sockets.map(s => s.id), aiId]);
   await run({ aiId, broadcaster, sockets, state });
-
-  // broadcaster.emit('message', beginRound);
 };
 
 const updateState = (
