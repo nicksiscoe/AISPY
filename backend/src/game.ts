@@ -47,7 +47,8 @@ const createGameState = (gameId: string, playerIds: string[]): GameState => ({
 
 const emitStateAndWait = async (game: Game): Promise<Game> => {
   console.log(
-    `emitting ${game.state.latestEvent.type} event state then waiting for ${game.state.latestEvent.duration} ms`
+    `emitting ${game.state.latestEvent.type} event state then waiting for ${game.state.latestEvent.duration} ms`,
+    game.state.latestEvent
   );
   game.broadcaster.emit('message', createGameEvent('stateChange', game.state));
   await wait(game.state.latestEvent.duration);
