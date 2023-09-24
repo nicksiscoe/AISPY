@@ -48,10 +48,7 @@ const emitStateAndWait = async (game: Game): Promise<Game> => {
   return game;
 };
 
-const waitForMessageFrom = async <
-  T extends GameMessage['type'],
-  M extends Extract<GameMessage, { type: T }>,
->(
+const waitForMessageFrom = async <T extends GameMessage['type']>(
   messageType: T,
   socket: GameSocket
 ): Promise<GameMessageWithSender> => {
@@ -73,6 +70,7 @@ const waitForMessageFrom = async <
 
 const run = async (game: Game): Promise<Game> => {
   const { latestEvent } = game.state;
+  console.log(`Run step ${latestEvent.type}`);
   switch (latestEvent.type) {
     // Begin game is handled a litte weirdly cuz it's the initialization event
     case 'beginGame': {
@@ -85,17 +83,16 @@ const run = async (game: Game): Promise<Game> => {
     }
     case 'beginRound': {
       const state = updateState(game.state, 'waitForQuestion');
-      return emitStateAndWait({ ...game, state });
+      return run(await emitStateAndWait({ ...game, state }));
     }
     case 'waitForQuestion': {
-      // latestEvent.askerId;
       const question = await waitForMessageFrom(
         'question',
         game.sockets.find(s => s.id === latestEvent.askerId)!
       );
 
       const state = applyMessageToState(game.state, question);
-      return emitStateAndWait({ ...game, state });
+      return run(await emitStateAndWait({ ...game, state }));
     }
     default:
       return game;

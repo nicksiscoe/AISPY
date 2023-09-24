@@ -41,7 +41,7 @@ io.on('connection', socket =>
       // If we're at quorum, create the game
       if (waitingSockets.length >= params.HUMAN_PLAYER_COUNT) {
         gameIdIndex++;
-        startGame(gameId, io.to(gameId), waitingSockets);
+        startGame(gameId, io.to(gameId), [...waitingSockets]);
         waitingSockets.splice(0, waitingSockets.length);
       }
     })
@@ -49,15 +49,15 @@ io.on('connection', socket =>
     .on('TEST_AI' as any, async (data: any) => {
       console.log('Got TEST_AI data', data);
 
-      const baseUrl = "https://hack23-ai-ac11aa57a2eb.herokuapp.com/";
-      const playerList = {"player_list": ["Miller", "Royce", "Alex", "Nick"]};
-      const newSessionSuffix = "/new-session/ai-amount/1";
-    
+      const baseUrl = 'https://hack23-ai-ac11aa57a2eb.herokuapp.com/';
+      const playerList = { player_list: ['Miller', 'Royce', 'Alex', 'Nick'] };
+      const newSessionSuffix = '/new-session/ai-amount/1';
+
       // 1. start session, obtain session id
       const newSessionUrl = baseUrl + newSessionSuffix; // POST
       const sessionBody = playerList;
       const sessionResponse = await axios.post(newSessionUrl, sessionBody);
-      console.log('response from ai', sessionResponse.data)
+      console.log('response from ai', sessionResponse.data);
 
       // example log
       // response from ai {
@@ -69,8 +69,8 @@ io.on('connection', socket =>
       const aiName = sessionResponse.data.ai_players[0]; // use first result for testing
 
       // 2. assemble session and ai personalities
-      const questionUrl = baseUrl + "/ai/" + aiName + "/session/" + sessionID;
-      const question = "Are raiders fans violent thugs?";
+      const questionUrl = baseUrl + '/ai/' + aiName + '/session/' + sessionID;
+      const question = 'Are raiders fans violent thugs?';
 
       // 3. send question
       const questionResponse = await axios.post(questionUrl, question);
