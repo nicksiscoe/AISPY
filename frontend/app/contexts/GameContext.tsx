@@ -7,7 +7,7 @@ import { socket } from "../lib/socket";
 
 export type GameContextType = {
   connected?: boolean; // undefined = loading...
-  setPlayerReady: (ready: boolean) => void;
+  attemptJoin: () => void;
   live: boolean;
   playerId?: string;
   state?: GameState;
@@ -17,7 +17,7 @@ export type GameContextType = {
 
 const TEST: GameContextType = {
   connected: true,
-  setPlayerReady: () => {},
+  attemptJoin: () => {},
   live: true,
   playerId: "test2",
   state: DUMMY_STATE,
@@ -26,12 +26,12 @@ const TEST: GameContextType = {
 };
 const DEFAULT: GameContextType = {
   connected: undefined,
-  setPlayerReady: () => {},
+  attemptJoin: () => {},
   live: false,
 };
 
 // TODO: Use `DEFAULT` game state
-const INITIAL = TEST;
+const INITIAL = DEFAULT;
 
 export const GameContext = createContext<GameContextType>(INITIAL);
 
@@ -63,18 +63,18 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
       setPlayerId(event.data.playerId);
     };
     const onBegin = (event: Begin) => {
-      setState({
-        id: event.data.gameId,
-        players: event.data.players,
-        rounds: [],
-      });
-      setPrevChance(new Date());
-      setNextChange(new Date(event.ends));
+      setState(event.data);
+      if (event.ends) {
+        setPrevChance(new Date());
+        setNextChange(new Date(event.ends));
+      }
     };
     const onStateChange = (event: StateChange) => {
       setState(event.data);
-      setPrevChance(nextChange);
-      setNextChange(new Date(event.ends));
+      if (event.ends) {
+        setPrevChance(nextChange || new Date());
+        setNextChange(new Date(event.ends));
+      }
     };
 
     socket.on("connect", onConnect);
@@ -94,14 +94,12 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
     };
   }, []);
 
-  const setPlayerReady = (ready: boolean) => {
-    if (ready) {
-      socket.emit("message", { type: "join" });
-    }
+  const attemptJoin = () => {
+    socket.emit("message", { type: "join" });
   };
   // TODO: REMOVE (ALEX WANTED DIS)
   useEffect(() => {
-    if (connected) setPlayerReady(true);
+    if (connected) attemptJoin();
   }, [connected]);
 
   const live = !!state;
@@ -110,7 +108,7 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
     <Provider
       value={{
         connected,
-        setPlayerReady,
+        attemptJoin,
         live,
         playerId,
         state,
