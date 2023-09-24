@@ -45,11 +45,10 @@ io.on('connection', socket =>
         waitingSockets.splice(0, waitingSockets.length);
       }
     })
-    // TODO: Remove after testing we can hit royce's api
+
     .on('TEST_AI' as any, async (data: any) => {
       console.log('Got TEST_AI data', data);
 
-      // TODO: @miller hit @royce's API successfully
       const baseUrl = "https://hack23-ai-ac11aa57a2eb.herokuapp.com/";
       const playerList = {"player_list": ["Miller", "Royce", "Alex", "Nick"]};
       const newSessionSuffix = "/new-session/ai-amount/1";
