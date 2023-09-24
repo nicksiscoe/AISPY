@@ -1,6 +1,6 @@
-export const HUMAN_PLAYER_COUNT = 1;
+export const HUMAN_PLAYER_COUNT = 4;
 
-const DONT_WAIT = true;
+const DONT_WAIT = false;
 
 // Step durations
 export const BEGIN_GAME_DURATION = DONT_WAIT ? 0 : 5000;

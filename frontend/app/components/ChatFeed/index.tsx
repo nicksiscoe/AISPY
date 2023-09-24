@@ -69,6 +69,9 @@ function UserAction({ type }: { type: UserActionType }) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player>();
   const [text, setText] = useState("");
   const [didSubmit, setDidSubmit] = useState(false);
+  useEffect(() => {
+    setDidSubmit(false);
+  }, [type]);
 
   const lastInputTarget = useRef<HTMLTextAreaElement>();
   const updateInputHeight = (target?: HTMLTextAreaElement) => {
