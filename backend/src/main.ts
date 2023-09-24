@@ -44,6 +44,12 @@ io.on('connection', socket =>
         waitingSockets.splice(0, waitingSockets.length);
       }
     })
+    // TODO: Remove after testing we can hit royce's api
+    .on('TEST_AI' as any, async (data: any) => {
+      console.warn('Got TEST_AI data', data);
+
+      // TODO: @miller hit @royce's API successfully
+    })
 );
 
 httpServer.listen(3010, () => {

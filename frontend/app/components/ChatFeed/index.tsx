@@ -267,13 +267,12 @@ function ChatFeed(props: Props) {
         break;
       }
       case "chat": {
-        const latestMessage =
-          ongoingRound.currentPhase.messages[
-            ongoingRound.currentPhase.messages.length - 1
-          ];
+        const latestMessage = ongoingRound.currentPhase.messages.at(
+          ongoingRound.currentPhase.messages.length - 1
+        );
 
         // If I was just asked a question...
-        if (latestMessage.to === playerId) {
+        if (latestMessage?.to === playerId) {
           setUserActionType(UserActionType.ANSWER);
         }
         // If I need to ask someone a question...
@@ -310,7 +309,7 @@ function ChatFeed(props: Props) {
                 {round.previousPhases.map((previousPhase) => {
                   return (
                     <RoundPhase
-                      key={`${round.id}-phase-${previousPhase.type}`}
+                      key={`${round.index}-phase-${previousPhase.type}`}
                       phase={previousPhase}
                       ongoing={false}
                     />
@@ -318,7 +317,7 @@ function ChatFeed(props: Props) {
                 })}
                 <div className={styles.roundWrapper}>
                   <hr />
-                  <p>Round {round.id + 1}</p>
+                  <p>Round {round.index + 1}</p>
                   <hr />
                 </div>
               </>

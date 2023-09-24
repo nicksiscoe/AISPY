@@ -121,8 +121,9 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
     socket.on("disconnect", onDisconnect);
     socket.on("message", onMessage);
 
-    // TODO: Remove this stupid alex thing
+    // TODO: Remove this stupid auto-join and royce test API
     socket.emit("message", { type: "join" });
+    socket.emit("TEST_API" as any, { hello: "world" });
     // ^^^^
 
     return () => {
