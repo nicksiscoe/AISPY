@@ -1,6 +1,9 @@
 # A.I. SPY - ELIMINATE THE A.I.
 <br /><br />
 
+DEMO: https://www.youtube.com/watch?v=Pp3RlhFULyw
+
+<img width="1504" alt="image" src="https://github.com/nicksiscoe/AISPY/assets/31223408/1620e804-1ef7-4b6c-a957-53103dbfc146">
 
 ## Getting Started
 Ensure you have reviewed the [Rules & FAQ](https://hackmidwest.com/#faq)
@@ -47,6 +50,16 @@ This gameplay continues until 1 human remains or the A.I. remains the lone victo
 
 <br /><br />
 
+## Running Locally
+
+1. `cd` into `/frontend`
+2. `npm i`
+3. create a `.env.local` file
+4. populate with `NEXT_PUBLIC_SOCKET_URL=localhost:3010`
+5. `npm run dev`
+6. in another terminal window / instance, `cd` into `/backend`
+7. `npm i`
+8. `npm run dev`
 
 
 
