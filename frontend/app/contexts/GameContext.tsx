@@ -81,29 +81,24 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
     };
     const onMessage = (event: GameEvent) => {
       switch (event.type) {
-        case "joining": {
-          setPlayerId(event.data.playerId);
-          break;
-        }
-        case "begin": {
-          setState(event.data);
-          if (event.ends) {
-            setPrevChance(new Date());
-            setNextChange(new Date(event.ends));
-          }
-          break;
-        }
-        case "beginRound": {
-          // TODO: no-op?
-          break;
-        }
+        case "joining":
+          return setPlayerId(event.data.playerId);
         case "stateChange": {
-          setState(event.data);
-          if (event.ends) {
-            setPrevChance(nextChange || new Date());
-            setNextChange(new Date(event.ends));
+          const stateEvent = event.data.latestEvent;
+          switch (stateEvent.type) {
+            case "beginGame":
+              setState(event.data);
+              if (stateEvent.ends) {
+                setPrevChance(new Date());
+                setNextChange(new Date(stateEvent.ends));
+              }
+              return;
+            case "beginRound": {
+              // TODO: no-op?
+              return;
+            }
           }
-          break;
+          return;
         }
         default: {
           console.error("Unhandled Socket Message", JSON.stringify(event));
@@ -116,6 +111,7 @@ export const GameProvider = (props: { children: React.ReactNode }) => {
     socket.on("disconnect", onDisconnect);
     socket.on("message", onMessage);
 
+    socket.emit("message", { type: "join" });
     return () => {
       if (!socket) return;
       socket.off("connect", onConnect);
