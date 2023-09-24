@@ -1,5 +1,16 @@
+export type StateEvent = BeginGame | BeginRound | NewMessage;
+
+/** A question or answer is submitted */
+export type NewMessage = SE<'message', UserMessage>;
+
+/** All players have joined and the game is beginning */
+export type BeginGame = SE<'beginGame'>;
+
+export type BeginRound = SE<'beginRound', { index: number }>;
+
 export interface GameState {
   id: string;
+  latestEvent: StateEvent;
   players: Player[];
   rounds: Round[];
 }
@@ -18,8 +29,8 @@ export interface Persona {
 }
 
 export type Round = {
-  id: 0 | 1 | 2 | 3;
   currentPhase: RoundPhase;
+  index: number;
   previousPhases: RoundPhase[];
   status: 'ended' | 'ongoing';
 };
@@ -35,14 +46,21 @@ export type RoundPhase =
       eliminated?: string;
     };
 
-export interface UserMessage {
+export type UserMessage = {
   contents: string;
   /** player ID */
   from: string;
   id: string;
+  messageType: 'answer' | 'question';
   /** Date string */
   sentAt: number;
-  /** player ID */
+  // /** player ID */
   to: string;
-  type: 'answer' | 'question';
-}
+};
+
+type SE<T extends string, D = {}> = D & {
+  /** How long this event/step last, in milliseconds */
+  duration: number;
+  ends: string;
+  type: T;
+};

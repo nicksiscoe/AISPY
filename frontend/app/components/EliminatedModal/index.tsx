@@ -3,17 +3,14 @@ import Modal from "@mui/material/Modal";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import { Player } from "@/app/types";
 import styles from "../../styles/index.module.scss";
 
-interface PlayerModalProps {
-  player: Player;
+interface EliminatedModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const PlayerModal: React.FC<PlayerModalProps> = ({
-  player,
+const EliminatedModal: React.FC<EliminatedModalProps> = ({
   isOpen,
   onClose,
 }) => {
@@ -27,7 +24,7 @@ const PlayerModal: React.FC<PlayerModalProps> = ({
       <div className={styles.modalStyle}>
         <div className={styles.modalTitle}>
           <Typography variant="h6" id="modal-title">
-            {player.name}
+            ggwp
           </Typography>
           <IconButton
             edge="end"
@@ -40,17 +37,11 @@ const PlayerModal: React.FC<PlayerModalProps> = ({
           </IconButton>
         </div>
         <Typography variant="body2" id="modal-description">
-          <b>Age:</b> {player.age}
-        </Typography>
-        <Typography variant="body2" id="modal-description">
-          <b>Location:</b> {player.location}
-        </Typography>
-        <Typography variant="body2" id="modal-description">
-          <b>Bio:</b> {player.bio}
+          You have been voted out of the tribal council.
         </Typography>
       </div>
     </Modal>
   );
 };
 
-export default PlayerModal;
+export default EliminatedModal;

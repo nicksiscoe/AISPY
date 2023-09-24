@@ -5,6 +5,40 @@
   align-items: center;
   height: 100vh;
 
+  @property --x {
+    syntax: "<percentage>";
+    inherits: false;
+    initial-value: 0%;
+  }
+
+  #shine-div {
+    height: 30vh;
+    width: 60vw;
+    margin: auto;
+    border-radius: 10px;
+    background: radial-gradient(
+      ellipse farthest-corner at var(--x) 0%,
+      #ffffff 0%,
+      #ffb3ff 8%,
+      #ff33ff 25%,
+      #800080 62.5%,
+      #b300b3 100%
+    );
+    animation: colorChange 5s infinite alternate;
+  }
+
+  @keyframes colorChange {
+    0% {
+      --x: 0%;
+    }
+    50% {
+      --x: 50%;
+    }
+    100% {
+      --x: 100%;
+    }
+  }
+
   .connectionHeader {
     position: fixed;
     top: 0;
@@ -53,6 +87,7 @@
   overflow: hidden;
 
   .trayWrapper {
+    background-color: black;
     z-index: 2;
     padding-bottom: 0.5em;
     box-shadow: 0 2px 8px 10px rgba(0, 0, 0, 0.6);

@@ -1,15 +1,9 @@
-import { GameState, Round, RoundPhase, UserMessage } from './state';
+import { GameState } from './state';
 
 /**
  * The singular game event type; encompasses all events
  */
-export type GameEvent =
-  | Begin
-  | BeginRound
-  | Crash
-  | Joining
-  | NewMessage
-  | StateChange;
+export type GameEvent = Crash | Joining | StateChange;
 
 /**
  * The type to provide socket.io for events
@@ -21,16 +15,16 @@ export type ServerToClientEvents = {
 /**
  * Something has gone horribly wrong and the game is over
  */
-export type Crash = E<'crash'>;
+export type Crash = GE<'crash'>;
 
 /**
  * Updated game state
  * Unlike other events, this one can be sent at any time
  */
-export type StateChange = E<'stateChange', GameState>;
+export type StateChange = GE<'stateChange', GameState>;
 
 /** Waiting on other players to join */
-export type Joining = E<
+export type Joining = GE<
   'joining',
   {
     /** The ID of the game that will eventually be joined */
@@ -40,23 +34,8 @@ export type Joining = E<
   }
 >;
 
-/** All players have joined and the game is beginning */
-export type Begin = E<'begin', GameState>;
-
-/** A question or answer is submitted */
-export type NewMessage = E<'message', UserMessage>;
-
-export type BeginRound = E<'beginRound', Round>;
-
-type E<T extends string, D = {}> = {
+type GE<T, D = {}> = {
   data: D;
-  /**
-   * When this current step ends (as a date string)
-   * i.e., when the next event/step will be sent by the server
-   * If `null`, that means the event has no end time (like a state update),
-   * or the end time is unknown (like a join event)
-   */
-  ends: string | null;
   /** Unique event ID */
   id: string;
   type: T;

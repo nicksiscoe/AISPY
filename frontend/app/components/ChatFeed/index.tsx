@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { RoundPhase, UserActionType } from "@/app/types";
+import { Player, RoundPhase, UserActionType } from "@/app/types";
 import styles from "./index.module.scss";
 import { useGameContext } from "@/app/contexts/GameContext";
 import PlayerTray from "../PlayerTray";
@@ -80,7 +80,13 @@ function RoundPhase({
 const MAX_INPUT_HEIGHT = 120;
 
 function UserAction({ type }: { type: UserActionType }) {
+  const {
+    actions: { question, answer, vote },
+  } = useGameContext();
+
+  const [selectedPlayer, setSelectedPlayer] = useState<Player>();
   const [text, setText] = useState("");
+  const [didSubmit, setDidSubmit] = useState(false);
 
   const lastInputTarget = useRef<HTMLTextAreaElement>();
   const updateInputHeight = (target?: HTMLTextAreaElement) => {
@@ -104,18 +110,72 @@ function UserAction({ type }: { type: UserActionType }) {
   const attemptSubmitText = () => {
     if (!text) return;
 
-    // TODO: Submit to SOCKET BOI
-    // gameContext.submit();
-    // setText("");
+    switch (type) {
+      case UserActionType.ASK: {
+        if (!selectedPlayer) return;
+
+        question({
+          contents: text,
+          askeeId: selectedPlayer.id,
+        });
+        setDidSubmit(true);
+        setSelectedPlayer(undefined);
+        setText("");
+        break;
+      }
+      case UserActionType.ANSWER: {
+        answer({
+          contents: text,
+          questionId: "", // TODO: How do we know who to answer?
+        });
+        setDidSubmit(true);
+        setText("");
+        break;
+      }
+      default: {
+        break;
+      }
+    }
   };
+
+  const attemptSubmitVote = () => {
+    if (!selectedPlayer) return;
+
+    switch (type) {
+      case UserActionType.VOTE: {
+        vote({
+          /* TODO */
+        });
+        setSelectedPlayer(undefined);
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+  };
+  useEffect(() => {
+    if (selectedPlayer && type === UserActionType.VOTE) attemptSubmitVote();
+  }, [selectedPlayer]);
 
   switch (type) {
     case UserActionType.ASK: {
-      const disabled = text.length < 30;
+      const submitDisabled = didSubmit || text.length < 30;
       return (
         <div>
           <p>Select a player to interrogate...</p>
-          <PlayerTray showBadges={false} />
+          <PlayerTray
+            showBadges={false}
+            onSelect={
+              !didSubmit
+                ? (player) => {
+                    if (selectedPlayer?.id !== player.id) {
+                      setSelectedPlayer(player);
+                    }
+                  }
+                : undefined
+            }
+          />
           <div className={styles.text}>
             <textarea
               placeholder={"Ask a question..."}
@@ -123,13 +183,14 @@ function UserAction({ type }: { type: UserActionType }) {
               onInput={(e: any) => setText(e.target.value)}
               onKeyDown={handleKeyDown}
               rows={1}
+              disabled={didSubmit}
             />
             <button
               className={`${styles.sendButton} ${
-                disabled ? styles.disabled : ""
+                submitDisabled ? styles.disabled : ""
               }`}
               onClick={attemptSubmitText}
-              disabled={disabled}
+              disabled={submitDisabled}
             >
               💬
             </button>
@@ -138,7 +199,7 @@ function UserAction({ type }: { type: UserActionType }) {
       );
     }
     case UserActionType.ANSWER: {
-      const disabled = text.length < 30;
+      const submitDisabled = didSubmit || text.length < 30;
       return (
         <div className={styles.text}>
           <textarea
@@ -147,13 +208,14 @@ function UserAction({ type }: { type: UserActionType }) {
             onInput={(e: any) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
             rows={1}
+            disabled={didSubmit}
           />
           <button
             className={`${styles.sendButton} ${
-              disabled ? styles.disabled : ""
+              submitDisabled ? styles.disabled : ""
             }`}
             onClick={attemptSubmitText}
-            disabled={disabled}
+            disabled={submitDisabled}
           >
             💬
           </button>
@@ -166,9 +228,15 @@ function UserAction({ type }: { type: UserActionType }) {
           <p>Vote for a player to eliminate...</p>
           <PlayerTray
             showBadges={false}
-            onSelect={(player) => {
-              console.log("poop", player);
-            }}
+            onSelect={
+              !didSubmit
+                ? (player) => {
+                    if (selectedPlayer?.id !== player.id) {
+                      setSelectedPlayer(player);
+                    }
+                  }
+                : undefined
+            }
           />
         </div>
       );
@@ -268,7 +336,11 @@ function ChatFeed(props: Props) {
       )}
       <div className={styles.actionWrapper}>
         {!userActionType ? (
-          <p className={styles.noneRequired}>Waiting on other players...</p>
+          <p className={styles.noneRequired}>
+            {!state?.rounds.length
+              ? "Preparing to begin..."
+              : "Waiting on other players"}
+          </p>
         ) : (
           <UserAction type={userActionType} />
         )}

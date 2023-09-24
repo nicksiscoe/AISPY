@@ -4,8 +4,45 @@ import PlayerModal from "../PlayerModal";
 import { useGameContext } from "@/app/contexts/GameContext";
 import { Player } from "@/app/types";
 import styles from "./index.module.scss";
+import { Avatar, Badge, styled } from "@mui/material";
 import PlayerPic from "../PlayerPic";
+import EliminatedModal from "../EliminatedModal";
 
+const StyledBadge = styled(Badge)(({ theme }) => ({
+  "& .MuiBadge-badge": {
+    backgroundColor: "#44b700",
+    color: "#44b700",
+    boxShadow: `0 0 0 2px ${theme.palette.background.default}`,
+    "&::after": {
+      position: "absolute",
+      top: -1.15,
+      left: -1.16,
+      width: "100%",
+      height: "100%",
+      borderRadius: "50%",
+      animation: "ripple 1.2s infinite ease-in-out",
+      border: "1px solid currentColor",
+      content: '""',
+    },
+  },
+  "@keyframes ripple": {
+    "0%": {
+      transform: "scale(.8)",
+      opacity: 1,
+    },
+    "100%": {
+      transform: "scale(2.4)",
+      opacity: 0,
+    },
+  },
+}));
+
+const SmallAvatar = styled(Avatar)(({ theme }) => ({
+  width: 22,
+  height: 22,
+  border: `px solid ${theme.palette.background.paper}`,
+}));
+ 
 interface Props {
   onSelect?: (player: Player) => void;
   showBadges?: boolean;
