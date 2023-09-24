@@ -9,9 +9,10 @@
 }
 
 .readyButton {
+  background-color: white;
   padding: 0.5rem 1rem;
   border-radius: 100px;
-  color: white;
+  color: black;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -19,12 +20,8 @@
   gap: 8px;
   border: none;
   outline: none;
-
-  &.ready {
-    color: green;
-    .radio {
-      background-color: green;
-    }
+  &.disabled {
+    opacity: 0.3;
   }
 
   .radio {
