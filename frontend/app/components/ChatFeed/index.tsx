@@ -10,7 +10,6 @@ import styles from "./index.module.scss";
 import { useGameContext } from "@/app/contexts/GameContext";
 import PlayerTray from "../PlayerTray";
 import CountdownTimer from "../CountdownTimer";
-import PlayerPic from "../PlayerPic";
 
 const getActivityMessage = ({ latestEvent, ...state }: GameState): string => {
   switch (latestEvent.type) {
@@ -187,7 +186,6 @@ function UserAction({ type }: { type: UserActionType }) {
             showBadges={false}
             onSelect={player => {
               vote({ playerId: player.id });
-              setSelectedPlayer(undefined);
             }}
           />
         </Fragment>

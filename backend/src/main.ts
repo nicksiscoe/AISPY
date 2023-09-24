@@ -27,6 +27,7 @@ io.on('connection', socket =>
       console.warn(`${socket.id} is disconnecting`, reason)
     )
     .on('message', async msg => {
+      console.log(`client sent a ${msg.type} message`);
       if (msg.type !== 'join') return;
       console.log(
         `client sent a join message! there are ${waitingSockets.length} sockets waiting to begin`

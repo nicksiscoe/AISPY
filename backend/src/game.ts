@@ -51,7 +51,7 @@ const emitStateAndWait = async (game: Game): Promise<Game> => {
     game.state.latestEvent
   );
   game.broadcaster.emit('message', createGameEvent('stateChange', game.state));
-  await wait(game.state.latestEvent.duration);
+  // await wait(game.state.latestEvent.duration);
   return game;
 };
 
@@ -64,9 +64,13 @@ const waitForMessageFrom = async <
 ): Promise<M & GameMessageMetadata> => {
   return new Promise<M & GameMessageMetadata>(ok => {
     console.log(`Waiting for a ${messageType} message from ${socket.id}`);
-    socket.on('message', msg => {
+    const listener = (msg: GameMessage) => {
+      console.log('message listeners: ', socket.listeners('message'));
       console.log(`Got a ${messageType} message from ${socket.id}`);
       if (msg.type === messageType) {
+        console.log('got what I needed, detaching listener');
+        socket.removeListener('message', listener);
+        console.log('message listeners: ', socket.listeners('message'));
         ok({
           ...(msg as M),
           id: Date.now(),
@@ -74,7 +78,9 @@ const waitForMessageFrom = async <
           sentAt: new Date().toUTCString(),
         });
       }
-    });
+    };
+
+    socket.on('message', listener);
   });
 };
 
@@ -85,17 +91,22 @@ type VoteResults = {
 const collectVotes = async (
   game: Game
 ): Promise<VoteResults & GameMessageMetadata> => {
+  console.log(
+    `collectVotes begin, current event type: ${game.state.latestEvent.type}...`
+  );
   const votes: VoteResults['results'] = {};
-  return new Promise<VoteResults & GameMessageMetadata>(ok => {
-    game.sockets.forEach(socket => {
-      socket.on('message', msg => {
-        console.log(`Got a vote from ${socket.id}`);
-        if (msg.type === 'vote') {
-          votes[socket.id] = msg.data.playerId;
-        }
-      });
-    });
 
+  game.sockets.forEach(socket => {
+    console.log('attaching a message!', socket.id);
+    socket.on('message', msg => {
+      console.log(`Got a vote from ${socket.id}`);
+      if (msg.type === 'vote') {
+        votes[socket.id] = msg.data.playerId;
+      }
+    });
+  });
+
+  return new Promise<VoteResults & GameMessageMetadata>(ok => {
     setTimeout(
       () =>
         ok({
@@ -141,14 +152,6 @@ const getAnswerFromAi = async (
     const newSessionUrl = baseUrl + newSessionSuffix; // POST
     const sessionBody = playerList;
     const sessionResponse = await axios.post(newSessionUrl, sessionBody);
-    console.log('session response data:', sessionResponse.data);
-
-    // example session start log
-    // response from ai {
-    //   ai_players: [ 'billy' ],
-    //   session_id: '79f89a3b-66b3-47d7-96c4-63352193cca0'
-    // }
-
     const sessionID = sessionResponse.data.session_id;
     const aiName = sessionResponse.data.ai_players[0]; // use first result for testing
 
@@ -184,7 +187,7 @@ const getAnswerFromAi = async (
 
 const next = async (game: Game): Promise<Game> => {
   const { latestEvent } = game.state;
-  console.log(`Run step ${latestEvent.type}`);
+  console.log(`\n----------------\nRun step ${latestEvent.type}`);
 
   if (game.sockets.some(s => s.disconnected)) {
     throw new Error('Stopping game because someone disconnected');
@@ -225,6 +228,7 @@ const next = async (game: Game): Promise<Game> => {
       return next(await emitStateAndWait({ ...game, state }));
     }
     case 'waitForVotes': {
+      console.log('waitForVotes is calling collectVotes');
       const votes = await collectVotes(game);
       const state = updateState(game.state, 'handleVoteResults', votes);
       return next(await emitStateAndWait({ ...game, state }));
@@ -241,6 +245,16 @@ export const startGame = async (
 ) => {
   const aiId = 'ai';
   const state = createGameState(gameId, [...sockets.map(s => s.id), aiId]);
+
+  /**
+   * Detach any existing message listeners
+   */
+  sockets.forEach(socket => {
+    socket
+      .listeners('message')
+      .forEach(listener => socket.removeListener('message', listener));
+  });
+
   await next({ aiId, broadcaster, sockets, state });
 };
 
@@ -384,13 +398,18 @@ function updateState<T extends StateEvent['type']>(
     case 'waitForQuestion': {
       const eligibleAskers = getEligibleAskers(state);
 
+      const latestEvent =
+        eligibleAskers.length < 1
+          ? createStateEvent('waitForVotes', params.WAIT_FOR_VOTES_DURATION, {})
+          : createStateEvent(
+              'waitForQuestion',
+              params.WAIT_FOR_QUESTION_DURATION,
+              { askerId: pickOne(eligibleAskers)[0].id }
+            );
+
       return {
         ...state,
-        latestEvent: createStateEvent(
-          'waitForQuestion',
-          params.WAIT_FOR_QUESTION_DURATION,
-          { askerId: pickOne(eligibleAskers)[0].id }
-        ),
+        latestEvent: latestEvent,
       };
     }
 
