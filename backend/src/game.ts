@@ -4,7 +4,13 @@ import { ServerToClientEvents } from './events';
 import { ClientToServerEvents } from './messages';
 import { PERSONAS } from './mocks';
 import { GameState, Round, StateEvent } from './state';
-import { createGameEvent, createStateEvent, pickN, wait } from './utils';
+import {
+  createGameEvent,
+  createStateEvent,
+  pickN,
+  pickOne,
+  wait,
+} from './utils';
 
 export type GameSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
 type GameBroadcaster = BroadcastOperator<ServerToClientEvents, {}>;
@@ -45,7 +51,10 @@ const run = async (game: Game): Promise<Game> => {
         ...game,
         state: updateState(game.state, 'beginRound'),
       };
-      return emitStateAndWait(updatedGame);
+      return run(await emitStateAndWait(updatedGame));
+    case 'beginRound':
+      const state = updateState(game.state, 'waitForQuestion');
+      return emitStateAndWait({ ...game, state });
     default:
       return game;
   }
@@ -68,26 +77,39 @@ const updateState = (
   nextEvent: Exclude<StateEvent['type'], 'beginGame'>
 ): GameState => {
   switch (nextEvent) {
-    case 'beginRound': {
-      const newRound: Round = {
-        index: state.rounds.length,
-        currentPhase: { type: 'chat', messages: [] },
-        previousPhases: [],
-        status: 'ongoing',
-      };
-
+    case 'beginRound':
       return {
         ...state,
         latestEvent: createStateEvent(
           'beginRound',
           params.BEGIN_ROUND_DURATION,
-          { index: state.rounds.length }
+          {}
         ),
-        rounds: [...state.rounds, newRound],
+        rounds: [...state.rounds, { messages: [], phase: 'chat' }],
+      };
+
+    case 'waitForQuestion': {
+      // Get the players that haven't asked anything yet
+      const alreadyAsked = state.rounds[0].messages
+        .filter(m => m.messageType === 'question')
+        .map(m => m.askerId);
+
+      const eligibleAskers = state.players.filter(
+        p => !alreadyAsked.includes(p.id)
+      );
+
+      return {
+        ...state,
+        latestEvent: createStateEvent(
+          'waitForQuestion',
+          params.WAIT_FOR_QUESTION_DURATION,
+          { askerId: pickOne(eligibleAskers)[0].id }
+        ),
       };
     }
 
-    default:
-      return state;
+    default: {
+      throw new Error(`unhandled event type ${nextEvent}`);
+    }
   }
 };

@@ -1,4 +1,9 @@
-export type StateEvent = BeginGame | BeginRound | NewMessage;
+export type StateEvent =
+  | BeginGame
+  | BeginRound
+  | NewMessage
+  | WaitForAnswer
+  | WaitForQuestion;
 
 /** A question or answer is submitted */
 export type NewMessage = SE<'message', UserMessage>;
@@ -6,7 +11,13 @@ export type NewMessage = SE<'message', UserMessage>;
 /** All players have joined and the game is beginning */
 export type BeginGame = SE<'beginGame'>;
 
-export type BeginRound = SE<'beginRound', { index: number }>;
+export type BeginRound = SE<'beginRound'>;
+
+export type WaitForQuestion = SE<'waitForQuestion', { askerId: string }>;
+export type WaitForAnswer = SE<
+  'waitForAnswer',
+  { answererId: string; askerId: string }
+>;
 
 export interface GameState {
   id: string;
@@ -29,33 +40,16 @@ export interface Persona {
 }
 
 export type Round = {
-  currentPhase: RoundPhase;
-  index: number;
-  previousPhases: RoundPhase[];
-  status: 'ended' | 'ongoing';
+  messages: UserMessage[];
+  phase: 'chat' | 'vote' | 'ended';
 };
 
-export type RoundPhase =
-  | {
-      type: 'chat';
-      messages: UserMessage[];
-    }
-  | {
-      type: 'vote';
-      /** player ID */
-      eliminated?: string;
-    };
-
 export type UserMessage = {
+  answererId: string;
+  askerId: string;
   contents: string;
-  /** player ID */
-  from: string;
-  id: string;
   messageType: 'answer' | 'question';
-  /** Date string */
-  sentAt: number;
-  // /** player ID */
-  to: string;
+  sentAt: string;
 };
 
 type SE<T extends string, D = {}> = D & {
