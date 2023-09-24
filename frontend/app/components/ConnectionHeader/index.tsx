@@ -7,6 +7,7 @@ function ConnectionHeader() {
 
   const [showConnectionHeader, setShowConnectionHeader] =
     useState<boolean>(true);
+
   useEffect(() => {
     setShowConnectionHeader(true);
 

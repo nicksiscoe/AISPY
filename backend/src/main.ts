@@ -11,7 +11,7 @@ import { createGameEvent } from './utils';
 const app = express();
 const httpServer = createServer(app);
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
-  cors: { origin: '*' },
+  cors: { allowedHeaders: ['*'], origin: '*' },
 });
 
 let gameIdIndex = 0;

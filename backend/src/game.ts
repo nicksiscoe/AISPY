@@ -99,7 +99,6 @@ const collectVotes = async (
     setTimeout(
       () =>
         ok({
-          // ...(msg as M),
           results: votes,
           id: Date.now(),
           senderId: '',
@@ -149,14 +148,9 @@ const getAnswerFromAi = async (
 
   // 4. return response to front end
   console.log('question response', questionResponse.data);
-
-  const AI_TEXT_RESPONSE = questionResponse.data.at(0);
-  // TODO: @alex do something with AI_TEXT_RESPONSE, it is the legit AI response;
-
-  console.log('AI_TEXT_RESPONSE: ', AI_TEXT_RESPONSE);
   return {
     data: {
-      contents: questionResponse.data.at(0) ?? 'FUCK',
+      contents: questionResponse.data.join('') ?? 'FUCK',
       questionId,
     },
     id: Date.now(),
@@ -195,7 +189,6 @@ const next = async (game: Game): Promise<Game> => {
       );
 
       const state = updateState(game.state, 'waitForAnswer', question);
-
       return next(await emitStateAndWait({ ...game, state }));
     }
     case 'waitForAnswer': {
@@ -256,7 +249,48 @@ function updateState<T extends StateEvent['type']>(
       };
 
     case 'handleVoteResults': {
-      return state;
+      const { ...votes } = maybeMessage! as VoteResults & GameMessageMetadata;
+      const playerIds = Object.values(votes.results);
+      const voteCounts = Object.fromEntries(
+        Object.values(votes.results).map(id => [
+          id,
+          playerIds.filter(pid => pid === id).length,
+        ])
+      );
+
+      const maxVotes = Math.max(...Object.values(voteCounts));
+
+      const [loserId] =
+        Object.entries(voteCounts).find(([, count]) => count === maxVotes) ??
+        [];
+
+      const latestEvent =
+        loserId === 'ai'
+          ? createStateEvent('gameOver', 9999, { outcome: 'humansWin' })
+          : // Get the number of remaining humans after eliminating `loserId`
+          state.players.filter(p => p.id !== 'ai' && p.id !== loserId).length <=
+            1
+          ? createStateEvent('gameOver', 9999, { outcome: 'aiWins' })
+          : createStateEvent('beginRound', params.BEGIN_ROUND_DURATION, {});
+
+      return {
+        ...state,
+        latestEvent,
+        players: state.players.map(p => ({
+          ...p,
+          status:
+            p.status === 'eliminated' || p.id === loserId
+              ? 'eliminated'
+              : 'active',
+        })),
+        rounds: [
+          {
+            ...state.rounds[0],
+            phase: 'ended',
+          },
+          ...state.rounds.slice(1),
+        ],
+      };
     }
     case 'nextQuestionOrVote': {
       const { ...answer } = maybeMessage! as Answer & GameMessageMetadata;

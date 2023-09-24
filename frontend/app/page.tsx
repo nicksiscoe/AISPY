@@ -14,7 +14,7 @@ import ConnectionHeader from "./components/ConnectionHeader";
 
 function Intro() {
   const context = useGameContext();
-  const player = context.state?.players.find((p) => p.id === context.playerId);
+  const player = context.state?.players.find(p => p.id === context.playerId);
 
   if (!player) return null; // wtf?
 
@@ -28,7 +28,7 @@ function Intro() {
 
 function Game() {
   const context = useGameContext();
-  const player = context.state?.players.find((p) => p.id === context.playerId);
+  const player = context.state?.players.find(p => p.id === context.playerId);
 
   const [showPlayerEliminated, setShowPlayerEliminated] = useState(false);
   useEffect(() => {
@@ -43,7 +43,7 @@ function Game() {
       <div className={styles.trayWrapper}>
         <PlayerTray />
       </div>
-      <ChatFeed />
+      {context.state && context.me && <ChatFeed state={context.state} />}
       <EliminatedModal
         isOpen={showPlayerEliminated}
         onClose={() => setShowPlayerEliminated(false)}

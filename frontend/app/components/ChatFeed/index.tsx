@@ -1,62 +1,43 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Player, Round, UserActionType, WaitForAnswer } from "@/app/types";
+import { FC, Fragment, useEffect, useMemo, useRef, useState } from "react";
+import {
+  GameState,
+  Player,
+  Round,
+  UserActionType,
+  WaitForAnswer,
+} from "@/app/types";
 import styles from "./index.module.scss";
 import { useGameContext } from "@/app/contexts/GameContext";
 import PlayerTray from "../PlayerTray";
 import CountdownTimer from "../CountdownTimer";
 import PlayerPic from "../PlayerPic";
 
-function RoundPhase({
-  phase,
-  ongoing,
-}: {
-  phase: Round["phase"];
-  ongoing: boolean;
-}) {
-  const { playerId, state } = useGameContext();
-
-  switch (phase) {
-    case "chat": {
-      return (
-        <>
-          {ongoing && (
-            <div className={styles.interrogation}>
-              {/* // TODO: This should tell you who is asking/answering rn */}
-              <p>Interrogation...</p>
-            </div>
-          )}
-        </>
-      );
-    }
-    case "vote": {
-      if (ongoing) {
-        return (
-          <div className={styles.voting}>
-            <p>Voting...</p>
-          </div>
-        );
-      } else {
-        let eliminatedPlayer = undefined;
-        // const eliminatedPlayer = state?.players.find(
-        //   (p) => p.id === phase.eliminated
-        // );
-        // if (!!eliminatedPlayer) {
-        //   return (
-        //     <div className={`${styles.voting} ${styles.eliminated}`}>
-        //       <p>The group eliminated {eliminatedPlayer.name}.</p>
-        //     </div>
-        //   );
-        // } else {
-        return (
-          <div className={`${styles.voting} ${styles.eliminated}`}>
-            <p>Successfully eliminated a player.</p>
-          </div>
-        );
-        // }
-      }
-    }
+const getActivityMessage = ({ latestEvent, ...state }: GameState): string => {
+  switch (latestEvent.type) {
+    case "beginGame":
+      return `The game is on! Use this time to explore the personas that have been assigned to the other players. A player will be selected at random to ask a question in a moment.`;
+    case "beginRound":
+      return `Starting round ${state.rounds.length}`;
+    case "waitForAnswer":
+      return `Waiting for ${
+        state.players.find(p => p.id === latestEvent.answererId)!.name
+      } to answer`;
+    case "waitForQuestion":
+      return `Waiting for ${
+        state.players.find(p => p.id === latestEvent.askerId)!.name
+      } to ask a question`;
+    case "waitForVotes":
+      return "Collecting votes";
+    case "handleVoteResults":
+      return "Tabulating results";
+    case "gameOver":
+      return latestEvent.outcome === "aiWins"
+        ? "Game Over: AI Wins"
+        : "Game Over: Humans Win";
   }
-}
+
+  return "";
+};
 
 const MAX_INPUT_HEIGHT = 120;
 
@@ -145,15 +126,17 @@ function UserAction({ type }: { type: UserActionType }) {
 
   switch (type) {
     case UserActionType.ASK: {
-      const submitDisabled = didSubmit || !selectedPlayer || text.length < 30;
+      const submitDisabled = didSubmit || !selectedPlayer;
       return (
-        <div>
-          <p>Select a player to interrogate...</p>
+        <Fragment>
+          <p className={styles.label}>
+            Select the player you&apos;d like to ask a question
+          </p>
           <PlayerTray
             showBadges={false}
             onSelect={
               !didSubmit
-                ? (player) => {
+                ? player => {
                     if (selectedPlayer?.id !== player.id) {
                       setSelectedPlayer(player);
                     }
@@ -161,7 +144,7 @@ function UserAction({ type }: { type: UserActionType }) {
                 : undefined
             }
           />
-          <div className={styles.text}>
+          <div className={styles.textAreaWrapper}>
             <textarea
               placeholder={"Ask a question..."}
               value={text}
@@ -177,16 +160,16 @@ function UserAction({ type }: { type: UserActionType }) {
               onClick={attemptSubmitText}
               disabled={submitDisabled}
             >
-              💬
+              Send
             </button>
           </div>
-        </div>
+        </Fragment>
       );
     }
     case UserActionType.ANSWER: {
       const submitDisabled = didSubmit || text.length < 30;
       return (
-        <div className={styles.text}>
+        <div className={styles.textAreaWrapper}>
           <textarea
             placeholder={"Answer..."}
             value={text}
@@ -215,7 +198,7 @@ function UserAction({ type }: { type: UserActionType }) {
             showBadges={false}
             onSelect={
               !didSubmit
-                ? (player) => {
+                ? player => {
                     if (selectedPlayer?.id !== player.id) {
                       setSelectedPlayer(player);
                     }
@@ -229,13 +212,13 @@ function UserAction({ type }: { type: UserActionType }) {
   }
 }
 
-interface Props {}
+interface Props {
+  state: GameState;
+}
 
-function ChatFeed(props: Props) {
-  const { playerId, state, prevChange, nextChange } = useGameContext();
-
+function ChatFeed({ state }: Props) {
+  const { playerId, playerMap } = useGameContext();
   const scrollAnchorRef = useRef<HTMLDivElement>(null);
-
   const [userActionType, setUserActionType] = useState<UserActionType>();
 
   useEffect(() => {
@@ -244,7 +227,7 @@ function ChatFeed(props: Props) {
       block: "end",
     });
 
-    if (!state?.rounds.length) return;
+    if (!state.rounds.length) return;
     const ongoingRound = state.rounds.at(0);
     switch (ongoingRound?.phase) {
       case undefined: {
@@ -281,35 +264,37 @@ function ChatFeed(props: Props) {
     }
   }, [state]);
 
-  const player = useMemo(() => {
-    return state?.players.find((p) => p.id === playerId);
-  }, [state?.players, playerId]);
-
   return (
     <>
       <div className={styles.feedWrapper}>
         <div className={styles.feed}>
           <div id="feed-anchor" ref={scrollAnchorRef} />
-          {[...(state?.rounds || [])].reverse().map((round, index) => {
-            console.log(round, index);
-            const roundOngoing = index === (state?.rounds.length || 0) - 1;
+          <div style={{ padding: "0 1rem" }}>
+            <div className={styles.activityIndicator}>
+              <p>{getActivityMessage(state)}</p>
+              <CountdownTimer
+                duration={state.latestEvent.duration}
+                ends={state.latestEvent.ends}
+              />
+            </div>
+          </div>
+
+          {[...state.rounds].reverse().map((round, index) => {
             return (
-              <>
-                <RoundPhase phase={round.phase} ongoing={roundOngoing} />
-                {round.messages.map((message) => {
-                  const player = state?.players.find(
-                    (p) =>
-                      p.id ===
-                      (message.messageType === "question"
+              <Fragment key={index}>
+                {round.messages.map(message => {
+                  const player =
+                    playerMap[
+                      message.messageType === "question"
                         ? message.askerId
-                        : message.answererId)
-                  );
+                        : message.answererId
+                    ];
                   const fromMe = message.askerId === playerId;
                   if (!player) return null;
 
                   return (
                     <div
-                      key={`${index}-m-${message.sentAt}`}
+                      key={message.messageId}
                       className={`${styles.message} ${
                         fromMe ? styles.mine : ""
                       }`}
@@ -333,26 +318,16 @@ function ChatFeed(props: Props) {
                   <p>Round {index + 1}</p>
                   <hr />
                 </div>
-              </>
+              </Fragment>
             );
           })}
-          <div className={styles.welcome}>
-            <p>Welcome, {player?.name || "human"}.</p>
-          </div>
         </div>
       </div>
-      {!!prevChange && !!nextChange && (
-        <CountdownTimer start={prevChange} end={nextChange} />
-      )}
-      <div className={styles.actionWrapper}>
-        {!userActionType ? (
-          <p className={styles.noneRequired}>
-            {!state?.rounds.length ? "Preparing to begin..." : "Waiting..."}
-          </p>
-        ) : (
+      {userActionType && (
+        <div className={styles.actionWrapper}>
           <UserAction type={userActionType} />
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 }
